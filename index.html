@@ -2,414 +2,1202 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Control de Modista</title>
-<style>
-:root{font-family:Arial,sans-serif;color:#172b4d;background:#f1f2f4}
-*{box-sizing:border-box}
-body{margin:0}
-header{background:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #dfe1e6}
-h1{font-size:24px;margin:0}
-header p{margin:6px 0 0;color:#626f86;font-size:14px}
-button,input,select,textarea{font:inherit}
-button{border:0;border-radius:7px;padding:10px 13px;font-weight:700;cursor:pointer}
-.primary{background:#0c66e4;color:white}
-.secondary{background:#e9eef5;color:#172b4d}
-.danger{background:#ffebe6;color:#ae2e24}
-main{padding:18px 22px}
-.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.stat{background:#fff;border:1px solid #dfe1e6;border-radius:9px;padding:11px 15px;min-width:125px}
-.stat small{display:block;color:#626f86;margin-bottom:4px}
-.stat strong{font-size:22px}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
-.tools input,.tools select{border:1px solid #b6c2cf;border-radius:7px;background:white;padding:10px;min-width:190px}
-.board{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding:2px 2px 18px;min-height:420px}
-.column{flex:0 0 300px;width:300px;background:#ebecf0;border-radius:11px;padding:10px;min-height:300px;max-height:calc(100vh - 245px);overflow-y:auto}
-.column-title{font-size:15px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;padding:5px 4px 12px}
-.count{background:#dfe1e6;border-radius:12px;padding:3px 8px;font-size:12px}
-.cards{display:flex;flex-direction:column;gap:9px;min-height:95px}
-.card{background:white;border:1px solid #dfe1e6;border-radius:9px;padding:12px;box-shadow:0 1px 2px #091e4220}
-.card h3{font-size:16px;margin:0 0 8px}
-.card p{font-size:13px;color:#626f86;margin:5px 0;overflow-wrap:anywhere}
-.pill{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:5px;background:#e9f2ff;color:#0747a6;font-size:11px;font-weight:bold}
-.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.actions button{font-size:12px;padding:7px 8px}
-.empty{border:1px dashed #b6c2cf;color:#626f86;border-radius:8px;text-align:center;padding:18px 8px;font-size:13px}
-.backdrop{position:fixed;inset:0;background:#091e4280;display:none;align-items:center;justify-content:center;padding:15px;z-index:10}
-.backdrop.open{display:flex}
-.modal{background:white;border-radius:12px;width:min(560px,100%);max-height:92vh;overflow:auto;padding:22px;box-shadow:0 12px 40px #091e4240}
-.modal h2{margin:0 0 16px}
-.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field.full{grid-column:1/-1}
-.field label{font-size:13px;font-weight:bold}
-.field input,.field select,.field textarea{width:100%;border:1px solid #b6c2cf;border-radius:7px;padding:10px;background:#fff}
-.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
-.help{font-size:12px;color:#626f86;margin-top:12px}
-@media(max-width:650px){
- main{padding:14px}
- .column{flex-basis:85vw;width:85vw;max-height:none}
- .formgrid{grid-template-columns:1fr}
- .field.full{grid-column:auto}
- .stat{flex:1;min-width:95px}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Modista</title>
 
-</head>
-<body>
-<header>
-  <div>
-    <h1>🧵 Control de Modista</h1>
-    <p>Organizá cada arreglo en un tablero estilo Trello.</p>
-  </div>
-  <button class="primary" id="nueva">＋ Nueva prenda</button>
-</header>
-
-<main>
-  <div class="stats">
-    <div class="stat"><small>Total de prendas</small><strong id="total">0</strong></div>
-    <div class="stat"><small>En espera</small><strong id="sEspera">0</strong></div>
-    <div class="stat"><small>En taller</small><strong id="sTaller">0</strong></div>
-    <div class="stat"><small>Entregadas</small><strong id="sEntregado">0</strong></div>
-  </div>
-
-  <div class="tools">
-    <input id="buscar" type="search" placeholder="Buscar cliente o prenda">
-    <select id="filtro">
-      <option value="">Todos los estados</option>
-      <option value="espera">En espera</option>
-      <option value="taller">En taller</option>
-      <option value="entregado">Entregado</option>
-    </select>
-    <button class="secondary" id="whatsapp">Compartir resumen por WhatsApp</button>
-  </div>
-
-  <section class="board" id="tablero">
-    <div class="column" data-estado="espera">
-      <div class="column-title">📥 En espera <span class="count" id="cEspera">0</span></div>
-      <div class="cards" id="listaEspera"></div>
-    </div>
-    <div class="column" data-estado="taller">
-      <div class="column-title">🪡 En taller <span class="count" id="cTaller">0</span></div>
-      <div class="cards" id="listaTaller"></div>
-    </div>
-    <div class="column" data-estado="entregado">
-      <div class="column-title">✅ Entregado <span class="count" id="cEntregado">0</span></div>
-      <div class="cards" id="listaEntregado"></div>
-    </div>
-  </section>
-</main>
-
-<div class="backdrop" id="fondoModal" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
-  <div class="modal">
-    <h2 id="tituloModal">Nueva prenda</h2>
-    <form id="formPrenda">
-      <input type="hidden" id="idPrenda">
-      <div class="formgrid">
-        <div class="field">
-          <label for="cliente">Nombre del cliente *</label>
-          <input id="cliente" required maxlength="80">
-        </div>
-        <div class="field">
-          <label for="telefono">Teléfono</label>
-          <input id="telefono" type="tel" maxlength="30">
-        </div>
-        <div class="field full">
-          <label for="prenda">Prenda / arreglo *</label>
-          <input id="prenda" required maxlength="120" placeholder="Ej. Pantalón: ajustar ruedo">
-        </div>
-        <div class="field">
-          <label for="ingreso">Fecha de ingreso</label>
-          <input id="ingreso" type="date">
-        </div>
-        <div class="field">
-          <label for="entrega">Fecha de entrega</label>
-          <input id="entrega" type="date">
-        </div>
-        <div class="field">
-          <label for="precio">Precio ($)</label>
-          <input id="precio" type="number" min="0" step="0.01">
-        </div>
-        <div class="field">
-          <label for="estado">Estado</label>
-          <select id="estado">
-            <option value="espera">En espera</option>
-            <option value="taller">En taller</option>
-            <option value="entregado">Entregado</option>
-          </select>
-        </div>
-        <div class="field full">
-          <label for="notas">Notas</label>
-          <textarea id="notas" rows="3" maxlength="500"></textarea>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="secondary" id="cancelar">Cancelar</button>
-        <button type="submit" class="primary">Guardar prenda</button>
-      </div>
-      <p class="help">Los datos se guardan en este navegador.</p>
-    </form>
-  </div>
-</div>
-
-<script>
-(function () {
-  'use strict';
-
-  const CLAVE = 'controlModistaPrendas_v3';
-  const estados = ['espera', 'taller', 'entregado'];
-  const etiquetas = {
-    espera: 'En espera',
-    taller: 'En taller',
-    entregado: 'Entregado'
-  };
-  const $ = id => document.getElementById(id);
-  let prendas = [];
-
-  try {
-    const datos = JSON.parse(localStorage.getItem(CLAVE) || '[]');
-    if (Array.isArray(datos)) prendas = datos;
-  } catch (error) {
-    console.error('Error al cargar prendas:', error);
-  }
-
-  function guardar() {
-    try {
-      localStorage.setItem(CLAVE, JSON.stringify(prendas));
-      return true;
-    } catch (error) {
-      alert('No se pudieron guardar los datos en este navegador.');
-      return false;
-    }
-  }
-
-  function hoy() {
-    const d = new Date();
-    return d.getFullYear() + '-' +
-      String(d.getMonth() + 1).padStart(2, '0') + '-' +
-      String(d.getDate()).padStart(2, '0');
-  }
-
-  function escapar(valor) {
-    return String(valor ?? '').replace(/[&<>"']/g, letra => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;',
-      '"': '&quot;', "'": '&#39;'
-    })[letra]);
-  }
-
-  function fechaBonita(valor) {
-    if (!valor) return '';
-    const partes = valor.split('-');
-    return partes.length === 3
-      ? partes[2] + '/' + partes[1] + '/' + partes[0]
-      : valor;
-  }
-
-  function abrirModal(prenda = null) {
-    $('formPrenda').reset();
-    $('idPrenda').value = '';
-    $('ingreso').value = hoy();
-    $('estado').value = 'espera';
-    $('tituloModal').textContent = prenda ? 'Editar prenda' : 'Nueva prenda';
-
-    if (prenda) {
-      $('idPrenda').value = prenda.id;
-      $('cliente').value = prenda.cliente || '';
-      $('telefono').value = prenda.telefono || '';
-      $('prenda').value = prenda.prenda || '';
-      $('ingreso').value = prenda.ingreso || '';
-      $('entrega').value = prenda.entrega || '';
-      $('precio').value = prenda.precio ?? '';
-      $('estado').value = prenda.estado || 'espera';
-      $('notas').value = prenda.notas || '';
+  <style>
+    :root {
+      --fondo: #f4f5f7;
+      --blanco: #ffffff;
+      --texto: #172b4d;
+      --suave: #667085;
+      --borde: #dfe3e8;
+      --azul: #3867d6;
+      --verde: #18865b;
+      --naranja: #c77716;
+      --rojo: #c93636;
+      --sombra: 0 3px 12px rgba(20, 35, 60, .08);
     }
 
-    $('fondoModal').classList.add('open');
-    setTimeout(() => $('cliente').focus(), 50);
-  }
+    * {
+      box-sizing: border-box;
+    }
 
-  function cerrarModal() {
-    $('fondoModal').classList.remove('open');
-  }
+    body {
+      margin: 0;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-  function pintar() {
-    const busqueda = $('buscar').value.trim().toLocaleLowerCase('es');
-    const filtro = $('filtro').value;
-    const visibles = prendas.filter(p => {
-      const coincideEstado = !filtro || p.estado === filtro;
-      const texto = [p.cliente, p.telefono, p.prenda, p.notas]
-        .some(v => String(v || '').toLocaleLowerCase('es').includes(busqueda));
-      return coincideEstado && (!busqueda || texto);
-    });
+    button, input, select, textarea {
+      font: inherit;
+    }
 
-    const listas = {
-      espera: 'listaEspera',
-      taller: 'listaTaller',
-      entregado: 'listaEntregado'
-    };
-    const contadores = {
-      espera: 'cEspera',
-      taller: 'cTaller',
-      entregado: 'cEntregado'
-    };
+    button {
+      cursor: pointer;
+    }
 
-    estados.forEach(estado => {
-      const contenedor = $(listas[estado]);
-      const lista = visibles.filter(p => p.estado === estado);
-      $(contadores[estado]).textContent = lista.length;
-      contenedor.innerHTML = '';
+    .encabezado {
+      background: #fff;
+      border-bottom: 1px solid var(--borde);
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
 
-      if (!lista.length) {
-        contenedor.innerHTML =
-          '<div class="empty">Sin prendas por ahora</div>';
-        return;
+    .marca h1 {
+      font-size: 25px;
+      margin: 0 0 5px;
+    }
+
+    .marca p {
+      color: var(--suave);
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .contenedor {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .boton {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 15px;
+      font-weight: 700;
+      transition: opacity .15s;
+    }
+
+    .boton:hover {
+      opacity: .86;
+    }
+
+    .boton-principal {
+      background: var(--azul);
+      color: #fff;
+    }
+
+    .boton-secundario {
+      background: #edf0f5;
+      color: var(--texto);
+    }
+
+    .boton-verde {
+      background: #e4f5ec;
+      color: #126b47;
+    }
+
+    .boton-rojo {
+      background: #fff0f0;
+      color: var(--rojo);
+    }
+
+    .estadisticas {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .estadistica {
+      background: #fff;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--borde);
+      box-shadow: var(--sombra);
+    }
+
+    .estadistica span {
+      display: block;
+      color: var(--suave);
+      font-size: 13px;
+      margin-bottom: 9px;
+    }
+
+    .estadistica strong {
+      display: block;
+      font-size: 26px;
+    }
+
+    .herramientas {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .herramientas input,
+    .herramientas select {
+      background: #fff;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      padding: 11px 12px;
+      min-width: 180px;
+    }
+
+    .herramientas input {
+      flex: 1;
+    }
+
+    .tablero {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .columna {
+      background: #e9edf3;
+      border-radius: 12px;
+      padding: 13px;
+      min-height: 270px;
+      border: 1px solid #e0e5ed;
+    }
+
+    .columna.cargando {
+      outline: 2px dashed var(--azul);
+      outline-offset: -5px;
+    }
+
+    .columna-cabecera {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 3px 2px;
+    }
+
+    .columna-cabecera h2 {
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .cantidad {
+      background: #fff;
+      color: var(--suave);
+      border-radius: 20px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .lista-tarjetas {
+      display: grid;
+      gap: 10px;
+      min-height: 190px;
+    }
+
+    .tarjeta {
+      background: #fff;
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      padding: 13px;
+      box-shadow: 0 2px 5px rgba(20, 35, 60, .05);
+      cursor: grab;
+    }
+
+    .tarjeta:active {
+      cursor: grabbing;
+    }
+
+    .nombre-tarjeta {
+      display: block;
+      width: 100%;
+      border: 0;
+      padding: 5px 2px 10px;
+      background: transparent;
+      color: var(--texto);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: left;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+    }
+
+    .nombre-tarjeta:hover {
+      color: var(--azul);
+      text-decoration: underline;
+    }
+
+    .tarjeta-ayuda {
+      font-size: 12px;
+      color: var(--suave);
+      padding: 0 2px 8px;
+    }
+
+    .acciones-tarjeta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border-top: 1px solid #edf0f4;
+      padding-top: 10px;
+      margin-top: 3px;
+    }
+
+    .accion {
+      border: 0;
+      border-radius: 6px;
+      padding: 7px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #edf1f7;
+      color: var(--texto);
+    }
+
+    .accion.editar {
+      background: #e9efff;
+      color: #254ba8;
+    }
+
+    .accion.eliminar {
+      background: #fff0f0;
+      color: var(--rojo);
+    }
+
+    .vacio {
+      color: var(--suave);
+      font-size: 13px;
+      text-align: center;
+      padding: 30px 8px;
+    }
+
+    .pie {
+      margin-top: 22px;
+      color: var(--suave);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .modal-fondo {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(15, 23, 42, .55);
+      padding: 18px;
+      overflow-y: auto;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .modal-fondo.abierto {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 650px;
+      margin: auto;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, .2);
+      overflow: hidden;
+    }
+
+    .modal-cabecera {
+      padding: 19px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .modal-cabecera h2 {
+      font-size: 20px;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .cerrar {
+      background: #f0f2f5;
+      border: 0;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .modal-cuerpo {
+      padding: 22px;
+    }
+
+    .formulario {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .campo.completo {
+      grid-column: 1 / -1;
+    }
+
+    .campo label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .campo input,
+    .campo select,
+    .campo textarea {
+      width: 100%;
+      border: 1px solid #cfd5df;
+      border-radius: 8px;
+      padding: 11px;
+      background: #fff;
+      color: var(--texto);
+    }
+
+    .campo textarea {
+      min-height: 95px;
+      resize: vertical;
+    }
+
+    .modal-pie {
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+      flex-wrap: wrap;
+      padding: 16px 22px;
+      border-top: 1px solid var(--borde);
+      background: #fafbfc;
+    }
+
+    .ficha-datos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 17px;
+    }
+
+    .dato {
+      padding: 12px;
+      border-radius: 9px;
+      background: #f6f8fb;
+      min-width: 0;
+    }
+
+    .dato.completo {
+      grid-column: 1 / -1;
+    }
+
+    .dato span {
+      display: block;
+      font-size: 12px;
+      color: var(--suave);
+      margin-bottom: 7px;
+    }
+
+    .dato strong {
+      display: block;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .estado-etiqueta {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .estado-espera {
+      color: #85520c;
+      background: #fff1d6;
+    }
+
+    .estado-taller {
+      color: #254ba8;
+      background: #e5edff;
+    }
+
+    .estado-entregado {
+      color: #126b47;
+      background: #dff5e8;
+    }
+
+    .sin-datos {
+      color: #98a2b3 !important;
+      font-weight: 400 !important;
+    }
+
+    @media (max-width: 900px) {
+      .tablero {
+        grid-template-columns: 1fr;
       }
 
-      lista.forEach(p => {
-        const tarjeta = document.createElement('article');
-        tarjeta.className = 'card';
-        tarjeta.draggable = true;
-        tarjeta.dataset.id = p.id;
+      .estadisticas {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
 
-        let html = '<h3>' + escapar(p.cliente) + '</h3>';
-        html += '<p><b>Prenda:</b> ' + escapar(p.prenda) + '</p>';
-        if (p.telefono) html += '<p><b>Teléfono:</b> ' + escapar(p.telefono) + '</p>';
-        if (p.entrega) html += '<p><b>Entrega:</b> ' + escapar(fechaBonita(p.entrega)) + '</p>';
-        if (p.precio !== '' && p.precio != null) html += '<p><b>Precio:</b> $' + escapar(p.precio) + '</p>';
-        if (p.notas) html += '<p><b>Notas:</b> ' + escapar(p.notas) + '</p>';
+    @media (max-width: 520px) {
+      .encabezado {
+        padding: 18px;
+      }
 
-        html += '<span class="pill">' + etiquetas[p.estado] + '</span>';
-        html += '<div class="actions">';
-        html += '<button type="button" class="secondary" data-accion="editar">Editar</button>';
-        html += '<button type="button" class="secondary" data-accion="mover">' +
-          (p.estado === 'espera' ? 'Pasar a taller' :
-           p.estado === 'taller' ? 'Marcar entregado' : 'Volver a espera') +
-          '</button>';
-        html += '<button type="button" class="danger" data-accion="borrar">Eliminar</button>';
-        html += '</div>';
+      .contenedor {
+        padding: 16px;
+      }
 
-        tarjeta.innerHTML = html;
+      .estadistica {
+        padding: 13px;
+      }
 
-        tarjeta.addEventListener('click', evento => {
-          const boton = evento.target.closest('button');
-          if (!boton) return;
+      .estadistica strong {
+        font-size: 21px;
+      }
 
-          const actual = prendas.find(x => x.id === p.id);
-          if (!actual) return;
+      .formulario,
+      .ficha-datos {
+        grid-template-columns: 1fr;
+      }
 
-          if (boton.dataset.accion === 'editar') {
-            abrirModal(actual);
-          } else if (boton.dataset.accion === 'mover') {
-            actual.estado = actual.estado === 'espera' ? 'taller' :
-              actual.estado === 'taller' ? 'entregado' : 'espera';
-            if (guardar()) pintar();
-          } else if (boton.dataset.accion === 'borrar' &&
-                     confirm('¿Querés eliminar esta prenda?')) {
-            prendas = prendas.filter(x => x.id !== p.id);
-            if (guardar()) pintar();
+      .campo.completo,
+      .dato.completo {
+        grid-column: auto;
+      }
+
+      .modal-cuerpo {
+        padding: 16px;
+      }
+
+      .herramientas input,
+      .herramientas select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="encabezado">
+    <div class="marca">
+      <h1>🧵 Control de Modista</h1>
+      <p>Organizá tus clientes, prendas y entregas</p>
+    </div>
+    <button class="boton boton-principal" id="nuevaPrenda">
+      + Nueva prenda
+    </button>
+  </header>
+
+  <main class="contenedor">
+    <section class="estadisticas">
+      <div class="estadistica">
+        <span>Total de trabajos</span>
+        <strong id="totalTrabajos">0</strong>
+      </div>
+      <div class="estadistica">
+        <span>En espera</span>
+        <strong id="totalEspera">0</strong>
+      </div>
+      <div class="estadistica">
+        <span>En taller</span>
+        <strong id="totalTaller">0</strong>
+      </div>
+      <div class="estadistica">
+        <span>Entregados</span>
+        <strong id="totalEntregados">0</strong>
+      </div>
+    </section>
+
+    <section class="herramientas">
+      <input
+        id="busqueda"
+        type="search"
+        placeholder="Buscar empresa o cliente..."
+        aria-label="Buscar empresa o cliente"
+      >
+
+      <select id="filtroEstado" aria-label="Filtrar por estado">
+        <option value="">Todos los estados</option>
+        <option value="espera">En espera</option>
+        <option value="taller">En taller</option>
+        <option value="entregado">Entregado</option>
+      </select>
+
+      <button class="boton boton-secundario" id="exportar">
+        Exportar copia
+      </button>
+
+      <button class="boton boton-secundario" id="importar">
+        Importar copia
+      </button>
+
+      <input
+        type="file"
+        id="archivoImportacion"
+        accept=".json,application/json"
+        hidden
+      >
+    </section>
+
+    <section class="tablero">
+      <div class="columna" data-estado="espera">
+        <div class="columna-cabecera">
+          <h2>🕒 En espera</h2>
+          <span class="cantidad" id="cantidadEspera">0</span>
+        </div>
+        <div class="lista-tarjetas" id="listaEspera"></div>
+      </div>
+
+      <div class="columna" data-estado="taller">
+        <div class="columna-cabecera">
+          <h2>🧵 En taller</h2>
+          <span class="cantidad" id="cantidadTaller">0</span>
+        </div>
+        <div class="lista-tarjetas" id="listaTaller"></div>
+      </div>
+
+      <div class="columna" data-estado="entregado">
+        <div class="columna-cabecera">
+          <h2>✅ Entregado</h2>
+          <span class="cantidad" id="cantidadEntregado">0</span>
+        </div>
+        <div class="lista-tarjetas" id="listaEntregado"></div>
+      </div>
+    </section>
+
+    <p class="pie">
+      Los datos se guardan en este navegador. Usá «Exportar copia»
+      para conservar un respaldo.
+    </p>
+  </main>
+
+  <!-- Ventana para crear y editar -->
+  <div class="modal-fondo" id="modalFormulario" role="dialog"
+       aria-modal="true" aria-labelledby="tituloFormulario">
+    <div class="modal">
+      <div class="modal-cabecera">
+        <h2 id="tituloFormulario">Nueva prenda</h2>
+        <button class="cerrar" type="button" data-cerrar="modalFormulario"
+                aria-label="Cerrar">×</button>
+      </div>
+
+      <form id="formularioPrenda">
+        <div class="modal-cuerpo">
+          <div class="formulario">
+            <div class="campo completo">
+              <label for="cliente">Nombre de la empresa o cliente *</label>
+              <input id="cliente" name="cliente" required maxlength="120"
+                     placeholder="Ej.: Taller López o María Pérez">
+            </div>
+
+            <div class="campo">
+              <label for="telefono">Teléfono / WhatsApp</label>
+              <input id="telefono" name="telefono" type="tel"
+                     placeholder="Ej.: 3511234567">
+            </div>
+
+            <div class="campo">
+              <label for="prenda">Prenda o trabajo *</label>
+              <input id="prenda" name="prenda" required maxlength="150"
+                     placeholder="Ej.: Pantalón, vestido">
+            </div>
+
+            <div class="campo">
+              <label for="ingreso">Fecha de ingreso</label>
+              <input id="ingreso" name="ingreso" type="date">
+            </div>
+
+            <div class="campo">
+              <label for="entrega">Fecha de entrega</label>
+              <input id="entrega" name="entrega" type="date">
+            </div>
+
+            <div class="campo">
+              <label for="precio">Precio ($)</label>
+              <input id="precio" name="precio" type="number"
+                     min="0" step="0.01" placeholder="0">
+            </div>
+
+            <div class="campo">
+              <label for="estado">Estado del trabajo</label>
+              <select id="estado" name="estado">
+                <option value="espera">En espera</option>
+                <option value="taller">En taller</option>
+                <option value="entregado">Entregado</option>
+              </select>
+            </div>
+
+            <div class="campo completo">
+              <label for="notas">Detalles y observaciones</label>
+              <textarea id="notas" name="notas"
+                        placeholder="Medidas, arreglos, telas, señas, etc."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-pie">
+          <button class="boton boton-secundario" type="button"
+                  data-cerrar="modalFormulario">Cancelar</button>
+          <button class="boton boton-principal" type="submit">
+            Guardar prenda
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ficha con toda la información -->
+  <div class="modal-fondo" id="modalDetalle" role="dialog"
+       aria-modal="true" aria-labelledby="tituloDetalle">
+    <div class="modal">
+      <div class="modal-cabecera">
+        <h2 id="tituloDetalle">Ficha del trabajo</h2>
+        <button class="cerrar" type="button" data-cerrar="modalDetalle"
+                aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="modal-cuerpo">
+        <div class="ficha-datos" id="datosDetalle"></div>
+      </div>
+
+      <div class="modal-pie">
+        <button class="boton boton-secundario" type="button"
+                data-cerrar="modalDetalle">Cerrar</button>
+        <button class="boton boton-verde" id="whatsappDetalle" type="button">
+          Enviar por WhatsApp
+        </button>
+        <button class="boton boton-principal" id="editarDetalle" type="button">
+          Editar ficha
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const CLAVE = "controlModistaPrendas_v3";
+      const ESTADOS = ["espera", "taller", "entregado"];
+
+      const NOMBRES_ESTADO = {
+        espera: "En espera",
+        taller: "En taller",
+        entregado: "Entregado"
+      };
+
+      const $ = (selector) => document.querySelector(selector);
+
+      let prendas = cargarPrendas();
+      let idEnEdicion = null;
+      let idEnDetalle = null;
+      let idArrastrado = null;
+
+      function generarId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+        return Date.now().toString(36) + Math.random().toString(36).slice(2);
+      }
+
+      function cargarPrendas() {
+        try {
+          const guardado = localStorage.getItem(CLAVE);
+          if (!guardado) return [];
+
+          const datos = JSON.parse(guardado);
+          if (!Array.isArray(datos)) return [];
+
+          return datos.map((p) => normalizarPrenda(p));
+        } catch (error) {
+          console.error("No se pudieron cargar los trabajos:", error);
+          return [];
+        }
+      }
+
+      function normalizarPrenda(p) {
+        const estadoOriginal = String(p.estado || "espera").toLowerCase();
+        let estado = estadoOriginal;
+
+        if (["en espera", "pendiente", "espera"].includes(estado)) {
+          estado = "espera";
+        } else if (["en taller", "taller", "en proceso", "proceso"].includes(estado)) {
+          estado = "taller";
+        } else if (["entregado", "terminado", "finalizado"].includes(estado)) {
+          estado = "entregado";
+        } else {
+          estado = "espera";
+        }
+
+        return {
+          id: String(p.id || generarId()),
+          cliente: String(p.cliente || p.empresa || p.nombre || ""),
+          telefono: String(p.telefono || p.whatsapp || ""),
+          prenda: String(p.prenda || p.trabajo || ""),
+          ingreso: String(p.ingreso || ""),
+          entrega: String(p.entrega || ""),
+          precio: p.precio === undefined || p.precio === null ? "" : String(p.precio),
+          estado,
+          notas: String(p.notas || p.observaciones || "")
+        };
+      }
+
+      function guardarPrendas() {
+        try {
+          localStorage.setItem(CLAVE, JSON.stringify(prendas));
+          return true;
+        } catch (error) {
+          console.error("No se pudieron guardar los datos:", error);
+          alert("No se pudieron guardar los datos en este navegador. Exportá una copia y revisá el espacio disponible.");
+          return false;
+        }
+      }
+
+      function escapar(valor) {
+        return String(valor ?? "").replace(/[&<>"']/g, (caracter) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[caracter]);
+      }
+
+      function mostrarValor(valor) {
+        return valor === undefined || valor === null || String(valor).trim() === ""
+          ? "Sin especificar"
+          : String(valor);
+      }
+
+      function formatearFecha(fecha) {
+        if (!fecha) return "Sin especificar";
+        const partes = String(fecha).split("-");
+        if (partes.length !== 3) return fecha;
+        return partes[2] + "/" + partes[1] + "/" + partes[0];
+      }
+
+      function formatearPrecio(precio) {
+        if (precio === "" || precio === null || precio === undefined) {
+          return "Sin especificar";
+        }
+
+        const numero = Number(precio);
+        if (!Number.isFinite(numero)) return String(precio);
+
+        return numero.toLocaleString("es-AR", {
+          style: "currency",
+          currency: "ARS",
+          maximumFractionDigits: 2
+        });
+      }
+
+      function abrirModal(id) {
+        $("#" + id).classList.add("abierto");
+      }
+
+      function cerrarModal(id) {
+        $("#" + id).classList.remove("abierto");
+      }
+
+      function cerrarTodosLosModales() {
+        document.querySelectorAll(".modal-fondo").forEach((modal) => {
+          modal.classList.remove("abierto");
+        });
+      }
+
+      function nuevaPrenda() {
+        idEnEdicion = null;
+        $("#formularioPrenda").reset();
+        $("#estado").value = "espera";
+        $("#tituloFormulario").textContent = "Nueva prenda";
+        abrirModal("modalFormulario");
+        $("#cliente").focus();
+      }
+
+      function editarPrenda(id) {
+        const p = prendas.find((item) => item.id === id);
+        if (!p) return;
+
+        idEnEdicion = id;
+        $("#formularioPrenda").reset();
+
+        $("#cliente").value = p.cliente;
+        $("#telefono").value = p.telefono;
+        $("#prenda").value = p.prenda;
+        $("#ingreso").value = p.ingreso;
+        $("#entrega").value = p.entrega;
+        $("#precio").value = p.precio;
+        $("#estado").value = p.estado;
+        $("#notas").value = p.notas;
+
+        $("#tituloFormulario").textContent = "Editar trabajo";
+        cerrarModal("modalDetalle");
+        abrirModal("modalFormulario");
+        $("#cliente").focus();
+      }
+
+      function abrirDetalle(id) {
+        const p = prendas.find((item) => item.id === id);
+        if (!p) return;
+
+        idEnDetalle = id;
+        $("#tituloDetalle").textContent = p.cliente || "Ficha del trabajo";
+
+        const estadoClase = {
+          espera: "estado-espera",
+          taller: "estado-taller",
+          entregado: "estado-entregado"
+        }[p.estado] || "estado-espera";
+
+        const datos = [
+          ["Empresa o cliente", p.cliente, false],
+          ["Teléfono / WhatsApp", p.telefono, false],
+          ["Prenda o trabajo", p.prenda, false],
+          ["Fecha de ingreso", formatearFecha(p.ingreso), false],
+          ["Fecha de entrega", formatearFecha(p.entrega), false],
+          ["Precio", formatearPrecio(p.precio), false],
+          ["Estado", NOMBRES_ESTADO[p.estado] || "En espera", true],
+          ["Detalles y observaciones", p.notas, false, true]
+        ];
+
+        $("#datosDetalle").innerHTML = datos.map((dato) => {
+          const etiqueta = escapar(dato[0]);
+          const valor = escapar(mostrarValor(dato[1]));
+          const claseCompleto = dato[3] ? " completo" : "";
+
+          if (dato[2]) {
+            return `
+              <div class="dato${claseCompleto}">
+                <span>${etiqueta}</span>
+                <strong><span class="estado-etiqueta ${estadoClase}">${valor}</span></strong>
+              </div>
+            `;
+          }
+
+          const claseSinDatos = dato[1] === "" ? "sin-datos" : "";
+          return `
+            <div class="dato${claseCompleto}">
+              <span>${etiqueta}</span>
+              <strong class="${claseSinDatos}">${valor}</strong>
+            </div>
+          `;
+        }).join("");
+
+        abrirModal("modalDetalle");
+      }
+
+      function renderizar() {
+        const busqueda = $("#busqueda").value.trim().toLocaleLowerCase("es-AR");
+        const filtro = $("#filtroEstado").value;
+
+        const filtradas = prendas.filter((p) => {
+          const coincideBusqueda = [
+            p.cliente, p.telefono, p.prenda, p.notas
+          ].join(" ").toLocaleLowerCase("es-AR").includes(busqueda);
+
+          const coincideEstado = !filtro || p.estado === filtro;
+          return coincideBusqueda && coincideEstado;
+        });
+
+        const listas = {
+          espera: $("#listaEspera"),
+          taller: $("#listaTaller"),
+          entregado: $("#listaEntregado")
+        };
+
+        Object.values(listas).forEach((lista) => {
+          lista.innerHTML = "";
+        });
+
+        ESTADOS.forEach((estado) => {
+          const lista = listas[estado];
+          const elementos = filtradas.filter((p) => p.estado === estado);
+
+          $("#cantidad" + capitalizar(estado)).textContent = elementos.length;
+
+          if (elementos.length === 0) {
+            lista.innerHTML = '<div class="vacio">No hay trabajos en esta columna</div>';
+            return;
+          }
+
+          elementos.forEach((p) => {
+            const tarjeta = document.createElement("article");
+            tarjeta.className = "tarjeta";
+            tarjeta.draggable = true;
+            tarjeta.dataset.id = p.id;
+
+            tarjeta.innerHTML = `
+              <button class="nombre-tarjeta" type="button" data-accion="detalle">
+                ${escapar(p.cliente || "Cliente sin nombre")}
+              </button>
+              <div class="tarjeta-ayuda">Hacé clic en el nombre para ver la ficha completa</div>
+              <div class="acciones-tarjeta">
+                <button class="accion editar" type="button" data-accion="editar">Editar</button>
+                ${estado !== "espera" ? '<button class="accion" type="button" data-accion="anterior">← Estado anterior</button>' : ""}
+                ${estado !== "entregado" ? '<button class="accion" type="button" data-accion="siguiente">Avanzar →</button>' : ""}
+                <button class="accion eliminar" type="button" data-accion="eliminar">Eliminar</button>
+              </div>
+            `;
+
+            tarjeta.addEventListener("click", (evento) => {
+              const boton = evento.target.closest("[data-accion]");
+              if (!boton) {
+                abrirDetalle(p.id);
+                return;
+              }
+
+              const accion = boton.dataset.accion;
+
+              if (accion === "detalle") abrirDetalle(p.id);
+              if (accion === "editar") editarPrenda(p.id);
+              if (accion === "siguiente") moverEstado(p.id, 1);
+              if (accion === "anterior") moverEstado(p.id, -1);
+              if (accion === "eliminar") eliminarPrenda(p.id);
+            });
+
+            tarjeta.addEventListener("dragstart", (evento) => {
+              idArrastrado = p.id;
+              tarjeta.style.opacity = ".5";
+              if (evento.dataTransfer) {
+                evento.dataTransfer.setData("text/plain", p.id);
+                evento.dataTransfer.effectAllowed = "move";
+              }
+            });
+
+            tarjeta.addEventListener("dragend", () => {
+              tarjeta.style.opacity = "1";
+              idArrastrado = null;
+              document.querySelectorAll(".columna").forEach((columna) => {
+                columna.classList.remove("cargando");
+              });
+            });
+
+            lista.appendChild(tarjeta);
+          });
+        });
+
+        actualizarEstadisticas();
+      }
+
+      function capitalizar(texto) {
+        return texto.charAt(0).toUpperCase() + texto.slice(1);
+      }
+
+      function actualizarEstadisticas() {
+        $("#totalTrabajos").textContent = prendas.length;
+        $("#totalEspera").textContent = prendas.filter(p => p.estado === "espera").length;
+        $("#totalTaller").textContent = prendas.filter(p => p.estado === "taller").length;
+        $("#totalEntregados").textContent = prendas.filter(p => p.estado === "entregado").length;
+      }
+
+      function moverEstado(id, direccion) {
+        const p = prendas.find((item) => item.id === id);
+        if (!p) return;
+
+        const posicion = ESTADOS.indexOf(p.estado);
+        const nuevaPosicion = posicion + direccion;
+
+        if (nuevaPosicion < 0 || nuevaPosicion >= ESTADOS.length) return;
+
+        p.estado = ESTADOS[nuevaPosicion];
+        guardarPrendas();
+        renderizar();
+      }
+
+      function eliminarPrenda(id) {
+        const p = prendas.find((item) => item.id === id);
+        if (!p) return;
+
+        if (!confirm('¿Querés eliminar el trabajo de "' + p.cliente + '"? Esta acción no se puede deshacer.')) {
+          return;
+        }
+
+        prendas = prendas.filter((item) => item.id !== id);
+        guardarPrendas();
+        cerrarTodosLosModales();
+        renderizar();
+      }
+
+      function enviarWhatsApp(p) {
+        if (!p) return;
+
+        if (!p.telefono.trim()) {
+          alert("Esta ficha no tiene un teléfono cargado. Podés agregarlo editando el trabajo.");
+          return;
+        }
+
+        const mensaje = [
+          "CONTROL DE MODISTA",
+          "",
+          "Empresa o cliente: " + mostrarValor(p.cliente),
+          "Teléfono: " + mostrarValor(p.telefono),
+          "Prenda o trabajo: " + mostrarValor(p.prenda),
+          "Fecha de ingreso: " + formatearFecha(p.ingreso),
+          "Fecha de entrega: " + formatearFecha(p.entrega),
+          "Precio: " + formatearPrecio(p.precio),
+          "Estado: " + (NOMBRES_ESTADO[p.estado] || "En espera"),
+          "Detalles: " + mostrarValor(p.notas)
+        ].join("\n");
+
+        const telefono = p.telefono.replace(/\D/g, "");
+        const url = "https://wa.me/" + telefono + "?text=" + encodeURIComponent(mensaje);
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+
+      $("#formularioPrenda").addEventListener("submit", (evento) => {
+        evento.preventDefault();
+
+        const cliente = $("#cliente").value.trim();
+        const prenda = $("#prenda").value.trim();
+
+        if (!cliente || !prenda) {
+          alert("Completá el nombre de la empresa o cliente y la prenda.");
+          return;
+        }
+
+        const datos = {
+          cliente,
+          telefono: $("#telefono").value.trim(),
+          prenda,
+          ingreso: $("#ingreso").value,
+          entrega: $("#entrega").value,
+          precio: $("#precio").value,
+          estado: $("#estado").value,
+          notas: $("#notas").value.trim()
+        };
+
+        if (idEnEdicion) {
+          const indice = prendas.findIndex((p) => p.id === idEnEdicion);
+          if (indice !== -1) {
+            prendas[indice] = { ...prendas[indice], ...datos };
+          }
+        } else {
+          prendas.push({ id: generarId(), ...datos });
+        }
+
+        guardarPrendas();
+        cerrarModal("modalFormulario");
+        idEnEdicion = null;
+        renderizar();
+      });
+
+      $("#nuevaPrenda").addEventListener("click", nuevaPrenda);
+
+      $("#busqueda").addEventListener("input", renderizar);
+      $("#filtroEstado").addEventListener("change", renderizar);
+
+      $("#editarDetalle").addEventListener("click", () => {
+        if (idEnDetalle) editarPrenda(idEnDetalle);
+      });
+
+      $("#whatsappDetalle").addEventListener("click", () => {
+        const p = prendas.find((item) => item.id === idEnDetalle);
+        enviarWhatsApp(p);
+      });
+
+      document.querySelectorAll("[data-cerrar]").forEach((boton) => {
+        boton.addEventListener("click", () => cerrarModal(boton.dataset.cerrar));
+      });
+
+      document.querySelectorAll(".modal-fondo").forEach((fondo) => {
+        fondo.addEventListener("click", (evento) => {
+          if (evento.target === fondo) fondo.classList.remove("abierto");
+        });
+      });
+
+      document.addEventListener("keydown", (evento) => {
+        if (evento.key === "Escape") cerrarTodosLosModales();
+      });
+
+      document.querySelectorAll(".columna").forEach((columna) => {
+        columna.addEventListener("dragover", (evento) => {
+          evento.preventDefault();
+          columna.classList.add("cargando");
+        });
+
+        columna.addEventListener("dragleave", (evento) => {
+          if (!columna.contains(evento.relatedTarget)) {
+            columna.classList.remove("cargando");
           }
         });
 
-        tarjeta.addEventListener('dragstart', evento => {
-          evento.dataTransfer.setData('text/plain', p.id);
-          evento.dataTransfer.effectAllowed = 'move';
+        columna.addEventListener("drop", (evento) => {
+          evento.preventDefault();
+          columna.classList.remove("cargando");
+
+          const id = (evento.dataTransfer && evento.dataTransfer.getData("text/plain")) || idArrastrado;
+          const nuevoEstado = columna.dataset.estado;
+          const p = prendas.find((item) => item.id === id);
+
+          if (!p || !ESTADOS.includes(nuevoEstado) || p.estado === nuevoEstado) return;
+
+          p.estado = nuevoEstado;
+          guardarPrendas();
+          renderizar();
         });
-
-        contenedor.appendChild(tarjeta);
       });
-    });
 
-    $('total').textContent = prendas.length;
-    $('sEspera').textContent = prendas.filter(p => p.estado === 'espera').length;
-    $('sTaller').textContent = prendas.filter(p => p.estado === 'taller').length;
-    $('sEntregado').textContent = prendas.filter(p => p.estado === 'entregado').length;
-  }
+      $("#exportar").addEventListener("click", () => {
+        const archivo = new Blob(
+          [JSON.stringify(prendas, null, 2)],
+          { type: "application/json;charset=utf-8" }
+        );
 
-  $('formPrenda').addEventListener('submit', evento => {
-    evento.preventDefault();
+        const url = URL.createObjectURL(archivo);
+        const enlace = document.createElement("a");
+        enlace.href = url;
+        enlace.download = "respaldo-control-de-modista.json";
+        document.body.appendChild(enlace);
+        enlace.click();
+        enlace.remove();
+        URL.revokeObjectURL(url);
+      });
 
-    const cliente = $('cliente').value.trim();
-    const descripcion = $('prenda').value.trim();
+      $("#importar").addEventListener("click", () => {
+        $("#archivoImportacion").click();
+      });
 
-    if (!cliente || !descripcion) {
-      alert('Completá el nombre del cliente y la prenda.');
-      return;
-    }
+      $("#archivoImportacion").addEventListener("change", async (evento) => {
+        const archivo = evento.target.files[0];
+        if (!archivo) return;
 
-    const id = $('idPrenda').value;
-    const registro = {
-      id: id || (window.crypto && crypto.randomUUID
-        ? crypto.randomUUID()
-        : String(Date.now())),
-      cliente: cliente,
-      telefono: $('telefono').value.trim(),
-      prenda: descripcion,
-      ingreso: $('ingreso').value,
-      entrega: $('entrega').value,
-      precio: $('precio').value,
-      estado: estados.includes($('estado').value) ? $('estado').value : 'espera',
-      notas: $('notas').value.trim()
-    };
+        try {
+          const contenido = await archivo.text();
+          const datos = JSON.parse(contenido);
 
-    if (id) {
-      prendas = prendas.map(p => p.id === id ? registro : p);
-    } else {
-      prendas.push(registro);
-    }
+          if (!Array.isArray(datos)) {
+            throw new Error("El archivo no contiene una lista válida de trabajos.");
+          }
 
-    if (guardar()) {
-      cerrarModal();
-      pintar();
-    }
-  });
+          if (!confirm("Importar esta copia reemplazará los trabajos que están actualmente en el navegador. ¿Querés continuar?")) {
+            evento.target.value = "";
+            return;
+          }
 
-  $('nueva').addEventListener('click', () => abrirModal());
-  $('cancelar').addEventListener('click', cerrarModal);
+          prendas = datos.map(normalizarPrenda);
+          guardarPrendas();
+          renderizar();
+          alert("Copia importada correctamente.");
+        } catch (error) {
+          alert("No se pudo importar el archivo. Verificá que sea una copia JSON válida.");
+          console.error(error);
+        } finally {
+          evento.target.value = "";
+        }
+      });
 
-  $('fondoModal').addEventListener('click', evento => {
-    if (evento.target === $('fondoModal')) cerrarModal();
-  });
-
-  document.addEventListener('keydown', evento => {
-    if (evento.key === 'Escape') cerrarModal();
-  });
-
-  $('buscar').addEventListener('input', pintar);
-  $('filtro').addEventListener('change', pintar);
-
-  document.querySelectorAll('.column').forEach(columna => {
-    columna.addEventListener('dragover', evento => evento.preventDefault());
-    columna.addEventListener('drop', evento => {
-      evento.preventDefault();
-      const id = evento.dataTransfer.getData('text/plain');
-      const prenda = prendas.find(p => p.id === id);
-
-      if (prenda) {
-        prenda.estado = columna.dataset.estado;
-        if (guardar()) pintar();
-      }
-    });
-  });
-
-  $('whatsapp').addEventListener('click', () => {
-    const resumen = estados.map(e =>
-      etiquetas[e] + ': ' + prendas.filter(p => p.estado === e).length
-    );
-    const detalle = prendas.map(p =>
-      '• ' + p.cliente + ' — ' + p.prenda + ' (' + etiquetas[p.estado] + ')'
-    );
-    const mensaje = 'Control de Modista\n' +
-      resumen.join('\n') + '\n\n' + detalle.join('\n');
-
-    window.open(
-      'https://wa.me/?text=' + encodeURIComponent(mensaje),
-      '_blank'
-    );
-  });
-
-  pintar();
-})();
-</script>
+      renderizar();
+    })();
+  </script>
 </body>
 </html>
