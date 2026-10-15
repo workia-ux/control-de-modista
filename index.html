@@ -1,726 +1,626 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Prendas - Modista</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="theme-color" content="#4f46e5">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        button, input, select, textarea { touch-action: manipulation; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Modista</title>
 
-        #modalPrenda, #modalReporte { overflow-y: auto; }
-        #modalPrenda > div, #modalReporte > div {
-            max-height: calc(100dvh - 2rem);
-            overflow-y: auto;
-        }
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet"
+ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        /* Adaptación para celulares */
-        @media (max-width: 640px) {
-            header > div { align-items: stretch; }
-            header .flex.items-center.gap-2.w-full {
-                display: grid;
-                grid-template-columns: 1fr;
-                width: 100%;
-            }
-            header .flex.items-center.gap-2.w-full button {
-                justify-content: center;
-                min-height: 44px;
-                width: 100%;
-            }
-            main {
-                padding-left: 12px !important;
-                padding-right: 12px !important;
-                padding-top: 16px !important;
-            }
-            main > .grid.grid-cols-2 { gap: 8px; }
-            main > .grid.grid-cols-2 > div {
-                padding: 12px;
-                min-width: 0;
-            }
-            main > .grid.grid-cols-2 .text-2xl { font-size: 1.35rem; }
-            main > .grid.grid-cols-2 .w-10.h-10 {
-                width: 32px;
-                height: 32px;
-                flex-shrink: 0;
-            }
-            main > .bg-white.p-4.rounded-xl.shadow-sm.border { padding: 12px; }
-            #buscador { min-height: 44px; font-size: 16px; }
-            #filtroEmpresa, #filtroEstado {
-                flex: 1 1 100%;
-                width: 100%;
-                min-height: 44px;
-                font-size: 16px;
-            }
-            #tableroPrendas {
-                display: flex !important;
-                flex-direction: row;
-                gap: 12px;
-                overflow-x: auto;
-                overflow-y: hidden;
-                padding-bottom: 12px;
-                scroll-snap-type: x mandatory;
-                -webkit-overflow-scrolling: touch;
-            }
-            #tableroPrendas > section {
-                flex: 0 0 86vw;
-                width: 86vw;
-                max-width: 360px;
-                scroll-snap-align: start;
-                min-height: 55vh;
-            }
-            #tableroPrendas article { padding: 13px; cursor: default; }
-            #tableroPrendas select { min-height: 42px; font-size: 14px; }
-            #tableroPrendas button { min-width: 40px; min-height: 40px; }
-            #formPrenda { padding: 16px !important; }
-            #formPrenda input, #formPrenda select, #formPrenda textarea,
-            #reporteEmpresa, #textoReporte { font-size: 16px; }
-            #formPrenda .grid.grid-cols-3 {
-                grid-template-columns: minmax(0, 2fr) minmax(75px, 1fr);
-            }
-            #formPrenda .grid.grid-cols-3 > .col-span-2 { grid-column: auto; }
-            #formPrenda .grid.grid-cols-2 { gap: 8px; }
-            #formPrenda button, #modalReporte button { min-height: 44px; }
-            #modalReporte .p-6 { padding: 16px; }
-            #modalReporte .flex.gap-2.justify-end { flex-direction: column; }
-            #modalReporte .flex.gap-2.justify-end button {
-                width: 100%;
-                justify-content: center;
-            }
-        }
+<style>
+* { box-sizing: border-box; }
 
-        .tarjeta-modista { padding: 8px 10px !important; }
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f1f5f9;
+    color: #1e293b;
+}
 
-        /* Tablero horizontal estilo Trello */
-        #tableroPrendas {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 16px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 8px 4px 16px;
-            width: 100%;
-            scroll-snap-type: x proximity;
-            -webkit-overflow-scrolling: touch;
-        }
-        #tableroPrendas > section {
-            flex: 0 0 280px;
-            width: 280px;
-            min-width: 280px;
-            max-width: 280px;
-            scroll-snap-align: start;
-        }
-        @media (max-width: 700px) {
-            #tableroPrendas { gap: 12px; }
-            #tableroPrendas > section {
-                flex-basis: 82vw;
-                width: 82vw;
-                min-width: 82vw;
-                max-width: 82vw;
-            }
-        }
-    </style>
+header {
+    background: #4f46e5;
+    color: white;
+    padding: 18px;
+}
+
+.contenedor {
+    max-width: 1400px;
+    margin: auto;
+    padding: 20px;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
+.nuevo { background: #10b981; color: white; }
+.reporte { background: #6366f1; color: white; }
+
+.resumen {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 4px #0001;
+}
+
+.filtros {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+input, select, textarea {
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+    min-width: 0;
+}
+
+#buscador { flex: 1; }
+
+.tablero {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.columna {
+    padding: 12px;
+    border-radius: 12px;
+    min-height: 300px;
+}
+
+.espera { background: #fef3c7; }
+.taller { background: #dbeafe; }
+.entregado { background: #d1fae5; }
+
+.titulo-columna {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 220px;
+}
+
+.tarjeta {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 5px #0000000d;
+    overflow-wrap: anywhere;
+}
+
+.tarjeta h4 { margin: 0 0 8px; }
+.empresa { color: #4f46e5; font-weight: bold; }
+.detalle { font-size: 13px; color: #64748b; }
+
+.acciones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.acciones select { flex: 1; width: 100%; }
+.editar { background: #e0e7ff; }
+.eliminar { background: #fee2e2; }
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: #0008;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    z-index: 10;
+}
+
+.modal-contenido {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 95dvh;
+    overflow-y: auto;
+}
+
+#formPrenda {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#formPrenda label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#formPrenda input,
+#formPrenda select,
+#formPrenda textarea {
+    width: 100%;
+}
+
+.campo-doble {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 10px;
+}
+
+.boton-guardar {
+    background: #4f46e5;
+    color: white;
+}
+
+.boton-cancelar {
+    background: #e2e8f0;
+}
+
+@media (max-width: 700px) {
+    .contenedor { padding: 12px; }
+
+    header .botones {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    header button { width: 100%; min-height: 44px; }
+
+    .resumen { grid-template-columns: repeat(2, 1fr); }
+    .stat { padding: 12px; }
+
+    .tablero {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: 12px;
+        padding-bottom: 12px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .columna {
+        flex: 0 0 85vw;
+        max-width: 360px;
+        scroll-snap-align: start;
+    }
+
+    .filtros { flex-direction: column; }
+    .filtros input, .filtros select { width: 100%; }
+    button { min-height: 40px; }
+}
+</style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
 
-    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-20">
-        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-700 p-2.5 rounded-xl shadow-inner">
-                    <i class="fa-solid fa-scissors text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight">Control de Modista</h1>
-                    <p class="text-xs text-indigo-200">Gestión de envíos, empresas y modificaciones</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <button onclick="abrirModalReporte()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3.5 py-2 rounded-lg text-sm font-medium transition shadow-sm flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-file-lines"></i> Resumen / WhatsApp
-                </button>
-                <button onclick="abrirModal()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-md flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> Nueva Prenda
-                </button>
-            </div>
-        </div>
-    </header>
+<body>
 
-    <main class="max-w-5xl mx-auto px-4 py-6">
+<header>
+    <h1><i class="fa-solid fa-scissors"></i> Control de Modista</h1>
+    <p>Gestión de prendas y modificaciones</p>
 
-        <!-- Tarjetas de resumen -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Total</p>
-                    <h3 id="statTotal" class="text-2xl font-bold text-slate-800">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                    <i class="fa-solid fa-shirt"></i>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">En espera</p>
-                    <h3 id="statPendiente" class="text-2xl font-bold text-amber-600">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                    <i class="fa-solid fa-clock"></i>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">En taller</p>
-                    <h3 id="statTaller" class="text-2xl font-bold text-blue-600">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                    <i class="fa-solid fa-truck-fast"></i>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Entregadas</p>
-                    <h3 id="statFinalizado" class="text-2xl font-bold text-emerald-600">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-            </div>
-        </div>
+    <div class="botones">
+        <button class="reporte" onclick="abrirReporte()">
+            <i class="fa-brands fa-whatsapp"></i>
+            Resumen / WhatsApp
+        </button>
 
-        <!-- Búsqueda y filtros -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-3 justify-between items-center">
-            <div class="w-full md:w-72 relative">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="buscador" oninput="renderizarListado()" placeholder="Buscar prenda, empresa..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                <select id="filtroEmpresa" onchange="renderizarListado()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2">
-                    <option value="">Todas las empresas</option>
-                </select>
-                <select id="filtroEstado" onchange="renderizarListado()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2">
-                    <option value="">Todos los estados</option>
-                    <option value="En espera">En espera</option>
-                    <option value="En taller">En taller</option>
-                    <option value="Entregado">Entregado</option>
-                </select>
-                <button onclick="resetFiltros()" class="text-slate-400 hover:text-slate-600 p-2 text-sm" title="Limpiar filtros">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
-            </div>
-        </div>
+        <button class="nuevo" onclick="abrirModal()">
+            <i class="fa-solid fa-plus"></i> Nueva prenda
+        </button>
+    </div>
+</header>
 
-        <!-- Tablero de prendas estilo Trello -->
-        <div class="mb-3">
-            <h2 class="text-lg font-bold text-slate-800">Tablero de prendas</h2>
-            <p class="text-sm text    <!-- Ventana para crear o editar prendas -->
-    <div id="modalPrenda" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div class="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
-                <h3 id="modalTitulo" class="font-bold text-lg">Nueva Prenda</h3>
-                <button type="button" onclick="cerrarModal()" class="text-indigo-200 hover:text-white p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
+<main class="contenedor">
 
-            <form id="formPrenda" onsubmit="guardarPrendaDesdeBoton(); return false;" class="p-6 space-y-4">
-                <input type="hidden" id="prendaId">
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Empresa</label>
-                    <input type="text" id="empresa" list="empresasSugeridas" required placeholder="Ej: Textil Sur, Confecciones Ana..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                    <datalist id="empresasSugeridas"></datalist>
-                </div>
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Prenda</label>
-                        <input type="text" id="nombrePrenda" required placeholder="Ej: Camisa, Pantalón" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Talle</label>
-                        <input type="text" id="talle" required placeholder="Ej: M / 42" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cantidad</label>
-                        <input type="number" id="cantidad" min="1" value="1" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de envío</label>
-                        <input type="date" id="fechaEnvio" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Modificación</label>
-                    <textarea id="modificacion" rows="2" required placeholder="Ej: Achicar cintura, cambiar cierre..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estado</label>
-                    <select id="estado" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                        <option value="En espera">En espera</option>
-                        <option value="En taller">En taller</option>
-                        <option value="Entregado">Entregado</option>
-                    </select>
-                </div>
-
-                <div class="pt-3 flex gap-3 justify-end">
-                    <button type="button" onclick="cerrarModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-medium">Cancelar</button>
-                    <button type="button" onclick="guardarPrendaDesdeBoton()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold">Guardar</button>
-                </div>
-            </form>
-        </div>
+    <div class="resumen">
+        <div class="stat">Total<h2 id="total">0</h2></div>
+        <div class="stat">En espera<h2 id="totalEspera">0</h2></div>
+        <div class="stat">En taller<h2 id="totalTaller">0</h2></div>
+        <div class="stat">Entregadas<h2 id="totalEntregado">0</h2></div>
     </div>
 
-    <!-- Ventana de resumen para WhatsApp -->
-    <div id="modalReporte" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div class="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
-                <h3 class="font-bold text-lg"><i class="fa-solid fa-file-lines mr-2"></i>Resumen para Enviar</h3>
-                <button type="button" onclick="cerrarModalReporte()" class="text-indigo-200 hover:text-white p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
+    <div class="filtros">
+        <input id="buscador" placeholder="Buscar prenda o empresa..."
+               oninput="renderizar()">
 
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Filtrar por empresa</label>
-                    <select id="reporteEmpresa" onchange="generarTextoReporte()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2">
-                        <option value="">Todas las empresas</option>
-                    </select>
-                </div>
+        <select id="filtroEstado" onchange="renderizar()">
+            <option value="">Todos los estados</option>
+            <option>En espera</option>
+            <option>En taller</option>
+            <option>Entregado</option>
+        </select>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Vista previa del mensaje</label>
-                    <textarea id="textoReporte" rows="8" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono text-slate-700"></textarea>
-                </div>
-
-                <div class="flex gap-2 justify-end">
-                    <button type="button" onclick="copiarReporte()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">
-                        <i class="fa-solid fa-copy"></i> Copiar texto
-                    </button>
-                    <button type="button" onclick="enviarWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
-                        <i class="fa-brands fa-whatsapp text-lg"></i> Enviar por WhatsApp
-                    </button>
-                </div>
-            </div>
-        </div>
+        <button onclick="limpiarFiltros()">Limpiar</button>
     </div>
 
-    <!-- Lógica de la aplicación -->
-    <script>
-        let prendas = JSON.parse(localStorage.getItem('prendas_modista')) || [];
+    <h2>Tablero de prendas</h2>
+    <p>En celular, deslizá hacia los costados para ver las columnas.</p>
 
-        // Normalizar estados antiguos si los hubiera.
-        prendas = prendas.map(p => ({
-            ...p,
-            estado: p.estado === 'Pendiente' ? 'En espera'
-                : p.estado === 'Finalizado' ? 'Entregado'
-                : p.estado || 'En espera'
-        }));
+    <div class="tablero">
 
-        document.getElementById('fechaEnvio').valueAsDate = new Date();
+        <section class="columna espera" data-estado="En espera"
+                 ondragover="permitirSoltar(event)"
+                 ondrop="soltar(event)">
+            <div class="titulo-columna">
+                <span>🕒 En espera</span>
+                <span id="contadorEspera">0</span>
+            </div>
+            <div class="lista" id="listaEspera"></div>
+        </section>
 
-        function guardarEnStorage() {
-            localStorage.setItem('prendas_modista', JSON.stringify(prendas));
-            actualizarEstadisticas();
-            actualizarFiltrosYListas();
-            renderizarListado();
+        <section class="columna taller" data-estado="En taller"
+                 ondragover="permitirSoltar(event)"
+                 ondrop="soltar(event)">
+            <div class="titulo-columna">
+                <span>🧵 En taller</span>
+                <span id="contadorTaller">0</span>
+            </div>
+            <div class="lista" id="listaTaller"></div>
+        </section>
+
+        <section class="columna entregado" data-estado="Entregado"
+                 ondragover="permitirSoltar(event)"
+                 ondrop="soltar(event)">
+            <div class="titulo-columna">
+                <span>✅ Entregado</span>
+                <span id="contadorEntregado">0</span>
+            </div>
+            <div class="lista" id="listaEntregado"></div>
+        </section>
+
+    </div>
+</main>
+
+<!-- FORMULARIO -->
+<div class="modal" id="modal">
+    <div class="modal-contenido">
+        <h2 id="tituloModal">Nueva prenda</h2>
+
+        <form id="formPrenda" onsubmit="guardar(event)">
+            <input type="hidden" id="id">
+
+            <div>
+                <label>Empresa</label>
+                <input id="empresa" required>
+            </div>
+
+            <div class="campo-doble">
+                <div>
+                    <label>Prenda</label>
+                    <input id="prenda" required>
+                </div>
+                <div>
+                    <label>Talle</label>
+                    <input id="talle" required>
+                </div>
+            </div>
+
+            <div class="campo-doble">
+                <div>
+                    <label>Cantidad</label>
+                    <input id="cantidad" type="number" min="1"
+                           value="1" required>
+                </div>
+                <div>
+                    <label>Fecha de envío</label>
+                    <input id="fecha" type="date" required>
+                </div>
+            </div>
+
+            <div>
+                <label>Modificación</label>
+                <textarea id="modificacion" rows="3" required></textarea>
+            </div>
+
+            <div>
+                <label>Estado</label>
+                <select id="estado">
+                    <option>En espera</option>
+                    <option>En taller</option>
+                    <option>Entregado</option>
+                </select>
+            </div>
+
+            <button class="boton-guardar" type="submit">Guardar</button>
+            <button class="boton-cancelar" type="button"
+                    onclick="cerrarModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<!-- RESUMEN -->
+<div class="modal" id="modalReporte">
+    <div class="modal-contenido">
+        <h2>Resumen de prendas</h2>
+        <textarea id="textoReporte" rows="12"
+                  style="width:100%"></textarea>
+        <button class="boton-guardar" onclick="copiarReporte()">
+            Copiar resumen
+        </button>
+        <button class="nuevo" onclick="enviarWhatsApp()">
+            Enviar por WhatsApp
+        </button>
+        <button class="boton-cancelar"
+                onclick="cerrarReporte()">Cerrar</button>
+    </div>
+</div>
+
+<script>
+let prendas = JSON.parse(localStorage.getItem("prendas_modista")) || [];
+
+// Adaptar registros creados con versiones anteriores.
+prendas = prendas.map(p => ({
+    ...p,
+    estado: p.estado === "Pendiente" ? "En espera" :
+            p.estado === "Finalizado" ? "Entregado" :
+            p.estado || "En espera"
+}));
+
+const $ = id => document.getElementById(id);
+
+function guardarDatos() {
+    localStorage.setItem("prendas_modista", JSON.stringify(prendas));
+    renderizar();
+}
+
+function abrirModal(id = null) {
+    $("formPrenda").reset();
+    $("id").value = "";
+    $("cantidad").value = 1;
+    $("fecha").value = new Date().toISOString().slice(0, 10);
+    $("tituloModal").textContent = id ? "Editar prenda" : "Nueva prenda";
+
+    if (id !== null) {
+        const p = prendas.find(x => x.id == id);
+        if (!p) return;
+
+        $("id").value = p.id;
+        $("empresa").value = p.empresa;
+        $("prenda").value = p.nombrePrenda;
+        $("talle").value = p.talle;
+        $("cantidad").value = p.cantidad;
+        $("fecha").value = p.fechaEnvio;
+        $("modificacion").value = p.modificacion;
+        $("estado").value = p.estado;
+    }
+
+    $("modal").style.display = "flex";
+}
+
+function cerrarModal() {
+    $("modal").style.display = "none";
+}
+
+function guardar(e) {
+    e.preventDefault();
+
+    const id = $("id").value;
+    const datos = {
+        id: id ? Number(id) : Date.now(),
+        empresa: $("empresa").value.trim(),
+        nombrePrenda: $("prenda").value.trim(),
+        talle: $("talle").value.trim(),
+        cantidad: Number($("cantidad").value),
+        fechaEnvio: $("fecha").value,
+        modificacion: $("modificacion").value.trim(),
+        estado: $("estado").value
+    };
+
+    if (id) {
+        const indice = prendas.findIndex(p => p.id == id);
+        if (indice !== -1) prendas[indice] = datos;
+    } else {
+        prendas.unshift(datos);
+    }
+
+    guardarDatos();
+    cerrarModal();
+}
+
+function eliminarPrenda(id) {
+    if (!confirm("¿Querés eliminar esta prenda?")) return;
+    prendas = prendas.filter(p => p.id != id);
+    guardarDatos();
+}
+
+function cambiarEstado(id, estado) {
+    const p = prendas.find(p => p.id == id);
+    if (!p) return;
+    p.estado = estado;
+    guardarDatos();
+}
+
+function permitirSoltar(e) {
+    e.preventDefault();
+}
+
+function soltar(e) {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    cambiarEstado(id, e.currentTarget.dataset.estado);
+}
+
+function renderizar() {
+    const columnas = {
+        "En espera": $("listaEspera"),
+        "En taller": $("listaTaller"),
+        "Entregado": $("listaEntregado")
+    };
+
+    Object.values(columnas).forEach(c => c.innerHTML = "");
+
+    const busqueda = $("buscador").value.toLowerCase();
+    const filtro = $("filtroEstado").value;
+
+    const lista = prendas.filter(p => {
+        const texto = [
+            p.empresa, p.nombrePrenda, p.talle, p.modificacion
+        ].join(" ").toLowerCase();
+
+        return texto.includes(busqueda) &&
+               (!filtro || p.estado === filtro);
+    });
+
+    const conteos = {
+        "En espera": 0,
+        "En taller": 0,
+        "Entregado": 0
+    };
+
+    lista.forEach(p => {
+        const estado = columnas[p.estado] ? p.estado : "En espera";
+        conteos[estado]++;
+
+        const tarjeta = document.createElement("article");
+        tarjeta.className = "tarjeta";
+        tarjeta.draggable = true;
+
+        tarjeta.ondragstart = e => {
+            e.dataTransfer.setData("text/plain", p.id);
+        };
+
+        const titulo = document.createElement("h4");
+        titulo.textContent = p.nombrePrenda;
+
+        const empresa = document.createElement("p");
+        empresa.className = "empresa";
+        empresa.textContent = p.empresa;
+
+        const detalle = document.createElement("p");
+        detalle.className = "detalle";
+        detalle.textContent =
+            `Talle: ${p.talle} | Cantidad: ${p.cantidad}`;
+
+        const modificacion = document.createElement("p");
+        modificacion.textContent = p.modificacion;
+
+        const fecha = document.createElement("p");
+        fecha.className = "detalle";
+        fecha.textContent = "Envío: " +
+            (p.fechaEnvio || "").split("-").reverse().join("/");
+
+        const acciones = document.createElement("div");
+        acciones.className = "acciones";
+
+        const selector = document.createElement("select");
+
+        ["En espera", "En taller", "Entregado"].forEach(estado => {
+            const opcion = document.createElement("option");
+            opcion.value = estado;
+            opcion.textContent = estado;
+            opcion.selected = estado === p.estado;
+            selector.appendChild(opcion);
+        });
+
+        selector.onchange = () => cambiarEstado(p.id, selector.value);
+
+        const editar = document.createElement("button");
+        editar.className = "editar";
+        editar.textContent = "✏️";
+        editar.onclick = () => abrirModal(p.id);
+
+        const borrar = document.createElement("button");
+        borrar.className = "eliminar";
+        borrar.textContent = "🗑️";
+        borrar.onclick = () => eliminarPrenda(p.id);
+
+        acciones.append(selector, editar, borrar);
+        tarjeta.append(titulo, empresa, detalle,
+                       modificacion, fecha, acciones);
+        columnas[estado].appendChild(tarjeta);
+    });
+
+    $("total").textContent = prendas.length;
+    $("totalEspera").textContent = prendas.filter(
+        p => p.estado === "En espera").length;
+    $("totalTaller").textContent = prendas.filter(
+        p => p.estado === "En taller").length;
+    $("totalEntregado").textContent = prendas.filter(
+        p => p.estado === "Entregado").length;
+
+    $("contadorEspera").textContent = conteos["En espera"];
+    $("contadorTaller").textContent = conteos["En taller"];
+    $("contadorEntregado").textContent = conteos["Entregado"];
+
+    Object.entries(columnas).forEach(([estado, columna]) => {
+        if (!columna.children.length) {
+            const vacio = document.createElement("p");
+            vacio.className = "detalle";
+            vacio.textContent = "No hay prendas";
+            columna.appendChild(vacio);
         }
+    });
+}
+
+function limpiarFiltros() {
+    $("buscador").value = "";
+    $("filtroEstado").value = "";
+    renderizar();
+}
+
+function abrirReporte() {
+    $("textoReporte").value = prendas.map((p, i) =>
+        `${i + 1}. ${p.nombrePrenda} - Talle: ${p.talle}\n` +
+        `Empresa: ${p.empresa}\nCantidad: ${p.cantidad}\n` +
+        `Modificación: ${p.modificacion}\nEstado: ${p.estado}`
+    ).join("\n\n");
+
+    $("modalReporte").style.display = "flex";
+}
+
+function cerrarReporte() {
+    $("modalReporte").style.display = "none";
+}
+
+async function copiarReporte() {
+    try {
+        await navigator.clipboard.writeText($("textoReporte").value);
+        alert("Resumen copiado");
+    } catch {
+        $("textoReporte").select();
+        document.execCommand("copy");
+        alert("Resumen copiado");
+    }
+}
+
+function enviarWhatsApp() {
+    const texto = encodeURIComponent($("textoReporte").value);
+    window.open("https://wa.me/?text=" + texto, "_blank");
+}
+
+renderizar();
+</script>
 
-        function abrirModal(id = null) {
-            const modal = document.getElementById('modalPrenda');
-            const titulo = document.getElementById('modalTitulo');
-            const formulario = document.getElementById('formPrenda');
-
-            formulario.reset();
-            document.getElementById('fechaEnvio').valueAsDate = new Date();
-            document.getElementById('cantidad').value = 1;
-            document.getElementById('prendaId').value = '';
-
-            if (id !== null) {
-                titulo.textContent = 'Editar Prenda';
-                const p = prendas.find(item => Number(item.id) === Number(id));
-
-                if (p) {
-                    document.getElementById('prendaId').value = p.id;
-                    document.getElementById('empresa').value = p.empresa || '';
-                    document.getElementById('nombrePrenda').value = p.nombrePrenda || '';
-                    document.getElementById('talle').value = p.talle || '';
-                    document.getElementById('cantidad').value = p.cantidad || 1;
-                    document.getElementById('fechaEnvio').value = p.fechaEnvio || '';
-                    document.getElementById('modificacion').value = p.modificacion || '';
-                    document.getElementById('estado').value = p.estado || 'En espera';
-                }
-            } else {
-                titulo.textContent = 'Nueva Prenda';
-            }
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function cerrarModal() {
-            const modal = document.getElementById('modalPrenda');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-
-        function guardarPrendaDesdeBoton() {
-            const formulario = document.getElementById('formPrenda');
-
-            if (!formulario.checkValidity()) {
-                formulario.reportValidity();
-                return;
-            }
-
-            const id = document.getElementById('prendaId').value;
-            const empresa = document.getElementById('empresa').value.trim();
-            const nombrePrenda = document.getElementById('nombrePrenda').value.trim();
-            const talle = document.getElementById('talle').value.trim();
-            const cantidad = parseInt(document.getElementById('cantidad').value, 10);
-            const fechaEnvio = document.getElementById('fechaEnvio').value;
-            const modificacion = document.getElementById('modificacion').value.trim();
-            const estado = document.getElementById('estado').value;
-
-            const datos = {
-                empresa,
-                nombrePrenda,
-                talle,
-                cantidad,
-                fechaEnvio,
-                modificacion,
-                estado
-            };
-
-            if (id) {
-                const index = prendas.findIndex(item => Number(item.id) === Number(id));
-                if (index !== -1) {
-                    prendas[index] = { ...prendas[index], ...datos };
-                }
-            } else {
-                prendas.unshift({ id: Date.now(), ...datos });
-            }
-
-            guardarEnStorage();
-            cerrarModal();
-        }
-
-        function eliminarPrenda(id) {
-            if (confirm('¿Estás seguro de eliminar esta prenda del registro?')) {
-                prendas = prendas.filter(item => Number(item.id) !== Number(id));
-                guardarEnStorage();
-            }
-        }        function actualizarEstadisticas() {
-            document.getElementById('statTotal').textContent = prendas.length;
-            document.getElementById('statPendiente').textContent =
-                prendas.filter(p => p.estado === 'En espera').length;
-            document.getElementById('statTaller').textContent =
-                prendas.filter(p => p.estado === 'En taller').length;
-            document.getElementById('statFinalizado').textContent =
-                prendas.filter(p => p.estado === 'Entregado').length;
-        }
-
-        function actualizarFiltrosYListas() {
-            const empresasUnicas = [...new Set(
-                prendas.map(p => p.empresa).filter(Boolean)
-            )].sort();
-
-            const selectFiltro = document.getElementById('filtroEmpresa');
-            const valorActualFiltro = selectFiltro.value;
-            selectFiltro.innerHTML = '<option value="">Todas las empresas</option>';
-
-            empresasUnicas.forEach(emp => {
-                const opcion = document.createElement('option');
-                opcion.value = emp;
-                opcion.textContent = emp;
-                opcion.selected = emp === valorActualFiltro;
-                selectFiltro.appendChild(opcion);
-            });
-
-            const datalist = document.getElementById('empresasSugeridas');
-            datalist.innerHTML = '';
-
-            empresasUnicas.forEach(emp => {
-                const opcion = document.createElement('option');
-                opcion.value = emp;
-                datalist.appendChild(opcion);
-            });
-
-            const selectReporte = document.getElementById('reporteEmpresa');
-            const valorActualReporte = selectReporte.value;
-            selectReporte.innerHTML = '<option value="">Todas las empresas</option>';
-
-            empresasUnicas.forEach(emp => {
-                const opcion = document.createElement('option');
-                opcion.value = emp;
-                opcion.textContent = emp;
-                opcion.selected = emp === valorActualReporte;
-                selectReporte.appendChild(opcion);
-            });
-        }
-
-        function renderizarListado() {
-            const buscador = document.getElementById('buscador').value.toLowerCase().trim();
-            const filtroEmpresa = document.getElementById('filtroEmpresa').value;
-            const filtroEstado = document.getElementById('filtroEstado').value;
-
-            const columnas = {
-                'En espera': document.getElementById('colEnEspera'),
-                'En taller': document.getElementById('colEnTaller'),
-                'Entregado': document.getElementById('colEntregado')
-            };
-
-            Object.values(columnas).forEach(col => col.innerHTML = '');
-
-            function normalizarEstado(estado) {
-                if (estado === 'Pendiente') return 'En espera';
-                if (estado === 'Finalizado') return 'Entregado';
-                return estado || 'En espera';
-            }
-
-            const filtradas = prendas.filter(p => {
-                const texto = [
-                    p.empresa,
-                    p.nombrePrenda,
-                    p.modificacion,
-                    p.talle
-                ].some(valor => (valor || '').toLowerCase().includes(buscador));
-
-                return texto &&
-                    (!filtroEmpresa || p.empresa === filtroEmpresa) &&
-                    (!filtroEstado || normalizarEstado(p.estado) === filtroEstado);
-            });
-
-            const conteos = {
-                'En espera': 0,
-                'En taller': 0,
-                'Entregado': 0
-            };
-
-            filtradas.forEach(p => {
-                const estado = normalizarEstado(p.estado);
-                const columna = columnas[estado] || columnas['En espera'];
-                conteos[estado] = (conteos[estado] || 0) + 1;
-
-                const tarjeta = document.createElement('article');
-                tarjeta.className = 'tarjeta-modista bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm hover:shadow-md transition cursor-pointer';
-                tarjeta.draggable = true;
-
-                tarjeta.ondragstart = event => {
-                    event.dataTransfer.setData('text/plain', String(p.id));
-                    event.dataTransfer.effectAllowed = 'move';
-                };
-
-                // La tarjeta muestra la empresa y despliega los detalles al tocarla.
-                const empresa = document.createElement('h4');
-                empresa.className = 'text-sm font-semibold text-indigo-700';
-                empresa.textContent = p.empresa || 'Sin empresa';
-
-                const detalles = document.createElement('div');
-                detalles.className = 'detalles-tarjeta hidden mt-2';
-
-                const nombre = document.createElement('p');
-                nombre.className = 'font-bold text-slate-800 mb-1';
-                nombre.textContent = 'Prenda: ' + (p.nombrePrenda || 'Sin nombre');
-
-                const talleCantidad = document.createElement('p');
-                talleCantidad.className = 'text-sm text-slate-600 mt-2';
-                talleCantidad.textContent =
-                    'Talle: ' + (p.talle || '-') + ' · Cantidad: ' + (p.cantidad || 1);
-
-                const modificacion = document.createElement('p');
-                modificacion.className = 'text-sm text-slate-600 mt-2 whitespace-pre-wrap break-words';
-                modificacion.textContent = p.modificacion || 'Sin modificación indicada';
-
-                const fecha = document.createElement('p');
-                fecha.className = 'text-xs text-slate-400 mt-2';
-                fecha.textContent = 'Envío: ' +
-                    (p.fechaEnvio ? p.fechaEnvio.split('-').reverse().join('/') : 'Sin fecha');
-
-                detalles.append(nombre, talleCantidad, modificacion, fecha);
-
-                tarjeta.addEventListener('click', () => {
-                    detalles.classList.toggle('hidden');
-                });
-
-                const acciones = document.createElement('div');
-                acciones.className = 'flex items-center justify-between gap-2 border-t border-slate-100 mt-3 pt-3';
-
-                const selectorEstado = document.createElement('select');
-                selectorEstado.className = 'min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs';
-                selectorEstado.title = 'Cambiar estado';
-
-                ['En espera', 'En taller', 'Entregado'].forEach(opcionEstado => {
-                    const opcion = document.createElement('option');
-                    opcion.value = opcionEstado;
-                    opcion.textContent = opcionEstado;
-                    opcion.selected = opcionEstado === estado;
-                    selectorEstado.appendChild(opcion);
-                });
-
-                selectorEstado.addEventListener('click', event => event.stopPropagation());
-                selectorEstado.addEventListener('change', () => {
-                    cambiarEstado(p.id, selectorEstado.value);
-                });
-
-                const botones = document.createElement('div');
-                botones.className = 'flex gap-1';
-
-                const editar = document.createElement('button');
-                editar.type = 'button';
-                editar.className = 'text-slate-400 hover:text-indigo-600 p-2';
-                editar.title = 'Editar';
-                editar.innerHTML = '<i class="fa-solid fa-pen"></i>';
-                editar.addEventListener('click', event => {
-                    event.stopPropagation();
-                    abrirModal(p.id);
-                });
-
-                const eliminar = document.createElement('button');
-                eliminar.type = 'button';
-                eliminar.className = 'text-slate-400 hover:text-rose-600 p-2';
-                eliminar.title = 'Eliminar';
-                eliminar.innerHTML = '<i class="fa-solid fa-trash"></i>';
-                eliminar.addEventListener('click', event => {
-                    event.stopPropagation();
-                    eliminarPrenda(p.id);
-                });
-
-                botones.append(editar, eliminar);
-                acciones.append(selectorEstado, botones);
-                tarjeta.append(empresa, detalles, acciones);
-                columna.appendChild(tarjeta);
-            });
-
-            document.getElementById('countEnEspera').textContent = conteos['En espera'];
-            document.getElementById('countEnTaller').textContent = conteos['En taller'];
-            document.getElementById('countEntregado').textContent = conteos['Entregado'];
-
-            document.getElementById('sinResultados').classList.toggle(
-                'hidden', filtradas.length !== 0
-            );
-
-            Object.values(columnas).forEach(columna => {
-                if (!columna.children.length) {
-                    const mensaje = document.createElement('p');
-                    mensaje.className = 'text-xs text-slate-400 text-center py-6';
-                    mensaje.textContent = 'Soltá prendas aquí';
-                    columna.appendChild(mensaje);
-                }
-            });
-        }
-
-        function permitirSoltar(event) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'move';
-        }
-
-        function soltarPrenda(event) {
-            event.preventDefault();
-            const id = Number(event.dataTransfer.getData('text/plain'));
-            const nuevoEstado = event.currentTarget.dataset.estado;
-            cambiarEstado(id, nuevoEstado);
-        }
-
-        function cambiarEstado(id, estado) {
-            const prenda = prendas.find(p => Number(p.id) === Number(id));
-            if (!prenda) return;
-
-            prenda.estado = estado;
-            guardarEnStorage();
-        }
-
-        function resetFiltros() {
-            document.getElementById('buscador').value = '';
-            document.getElementById('filtroEmpresa').value = '';
-            document.getElementById('filtroEstado').value = '';
-            renderizarListado();
-        }
-
-        function abrirModalReporte() {
-            actualizarFiltrosYListas();
-            generarTextoReporte();
-
-            const modal = document.getElementById('modalReporte');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function cerrarModalReporte() {
-            const modal = document.getElementById('modalReporte');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-
-        function generarTextoReporte() {
-            const empresaFiltro = document.getElementById('reporteEmpresa').value;
-
-            const lista = empresaFiltro
-                ? prendas.filter(p => p.empresa === empresaFiltro)
-                : prendas;
-
-            let texto = '📋 *RESUMEN DE PRENDAS / MODIFICACIONES*\n';
-
-            if (empresaFiltro) {
-                texto += 'Empresa: *' + empresaFiltro + '*\n';
-            }
-
-            texto += '------------------------------------\n\n';
-
-            if (lista.length === 0) {
-                texto += 'No hay prendas registradas.';
-            } else {
-                lista.forEach((p, indice) => {
-                    texto += (indice + 1) + '. *' + p.nombrePrenda +
-                        '* (Talle: ' + p.talle + ') - Cant: *' + p.cantidad + '*\n';
-                    texto += '   🏢 Empresa: ' + p.empresa + '\n';
-                    texto += '   ✂️ Modificación: ' + p.modificacion + '\n';
-                    texto += '   📌 Estado: ' + p.estado + '\n\n';
-                });
-            }
-
-            document.getElementById('textoReporte').value = texto;
-        }
-
-        async function copiarReporte() {
-            const texto = document.getElementById('textoReporte').value;
-
-            try {
-                await navigator.clipboard.writeText(texto);
-                alert('¡Resumen copiado al portapapeles!');
-            } catch (error) {
-                const caja = document.getElementById('textoReporte');
-                caja.focus();
-                caja.select();
-                const copiado = document.execCommand('copy');
-
-                alert(copiado
-                    ? '¡Resumen copiado al portapapeles!'
-                    : 'No se pudo copiar automáticamente. Seleccioná y copiá el texto.');
-            }
-        }
-
-        function enviarWhatsApp() {
-            const texto = document.getElementById('textoReporte').value;
-            const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(texto);
-            window.open(url, '_blank');
-        }
-
-        // Inicialización de la aplicación
-        actualizarEstadisticas();
-        actualizarFiltrosYListas();
-        renderizarListado();
-    </script>
 </body>
 </html>
