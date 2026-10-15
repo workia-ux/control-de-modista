@@ -1,626 +1,415 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Control de Modista</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet"
- href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <style>
-* { box-sizing: border-box; }
-
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f1f5f9;
-    color: #1e293b;
-}
-
-header {
-    background: #4f46e5;
-    color: white;
-    padding: 18px;
-}
-
-.contenedor {
-    max-width: 1400px;
-    margin: auto;
-    padding: 20px;
-}
-
-button {
-    cursor: pointer;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
-}
-
-.nuevo { background: #10b981; color: white; }
-.reporte { background: #6366f1; color: white; }
-
-.resumen {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.stat {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 1px 4px #0001;
-}
-
-.filtros {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-input, select, textarea {
-    padding: 11px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    font: inherit;
-    min-width: 0;
-}
-
-#buscador { flex: 1; }
-
-.tablero {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    align-items: start;
-}
-
-.columna {
-    padding: 12px;
-    border-radius: 12px;
-    min-height: 300px;
-}
-
-.espera { background: #fef3c7; }
-.taller { background: #dbeafe; }
-.entregado { background: #d1fae5; }
-
-.titulo-columna {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    font-weight: bold;
-}
-
-.lista {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-height: 220px;
-}
-
-.tarjeta {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 5px #0000000d;
-    overflow-wrap: anywhere;
-}
-
-.tarjeta h4 { margin: 0 0 8px; }
-.empresa { color: #4f46e5; font-weight: bold; }
-.detalle { font-size: 13px; color: #64748b; }
-
-.acciones {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid #e2e8f0;
-}
-
-.acciones select { flex: 1; width: 100%; }
-.editar { background: #e0e7ff; }
-.eliminar { background: #fee2e2; }
-
-.modal {
-    position: fixed;
-    inset: 0;
-    background: #0008;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 12px;
-    z-index: 10;
-}
-
-.modal-contenido {
-    background: white;
-    border-radius: 14px;
-    padding: 20px;
-    width: 100%;
-    max-width: 500px;
-    max-height: 95dvh;
-    overflow-y: auto;
-}
-
-#formPrenda {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-#formPrenda label {
-    display: block;
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-#formPrenda input,
-#formPrenda select,
-#formPrenda textarea {
-    width: 100%;
-}
-
-.campo-doble {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 10px;
-}
-
-.boton-guardar {
-    background: #4f46e5;
-    color: white;
-}
-
-.boton-cancelar {
-    background: #e2e8f0;
-}
-
-@media (max-width: 700px) {
-    .contenedor { padding: 12px; }
-
-    header .botones {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    header button { width: 100%; min-height: 44px; }
-
-    .resumen { grid-template-columns: repeat(2, 1fr); }
-    .stat { padding: 12px; }
-
-    .tablero {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        gap: 12px;
-        padding-bottom: 12px;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .columna {
-        flex: 0 0 85vw;
-        max-width: 360px;
-        scroll-snap-align: start;
-    }
-
-    .filtros { flex-direction: column; }
-    .filtros input, .filtros select { width: 100%; }
-    button { min-height: 40px; }
+:root{font-family:Arial,sans-serif;color:#172b4d;background:#f1f2f4}
+*{box-sizing:border-box}
+body{margin:0}
+header{background:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #dfe1e6}
+h1{font-size:24px;margin:0}
+header p{margin:6px 0 0;color:#626f86;font-size:14px}
+button,input,select,textarea{font:inherit}
+button{border:0;border-radius:7px;padding:10px 13px;font-weight:700;cursor:pointer}
+.primary{background:#0c66e4;color:white}
+.secondary{background:#e9eef5;color:#172b4d}
+.danger{background:#ffebe6;color:#ae2e24}
+main{padding:18px 22px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.stat{background:#fff;border:1px solid #dfe1e6;border-radius:9px;padding:11px 15px;min-width:125px}
+.stat small{display:block;color:#626f86;margin-bottom:4px}
+.stat strong{font-size:22px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.tools input,.tools select{border:1px solid #b6c2cf;border-radius:7px;background:white;padding:10px;min-width:190px}
+.board{display:flex;gap:14px;overflow-x:auto;align-items:flex-start;padding:2px 2px 18px;min-height:420px}
+.column{flex:0 0 300px;width:300px;background:#ebecf0;border-radius:11px;padding:10px;min-height:300px;max-height:calc(100vh - 245px);overflow-y:auto}
+.column-title{font-size:15px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;padding:5px 4px 12px}
+.count{background:#dfe1e6;border-radius:12px;padding:3px 8px;font-size:12px}
+.cards{display:flex;flex-direction:column;gap:9px;min-height:95px}
+.card{background:white;border:1px solid #dfe1e6;border-radius:9px;padding:12px;box-shadow:0 1px 2px #091e4220}
+.card h3{font-size:16px;margin:0 0 8px}
+.card p{font-size:13px;color:#626f86;margin:5px 0;overflow-wrap:anywhere}
+.pill{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:5px;background:#e9f2ff;color:#0747a6;font-size:11px;font-weight:bold}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.actions button{font-size:12px;padding:7px 8px}
+.empty{border:1px dashed #b6c2cf;color:#626f86;border-radius:8px;text-align:center;padding:18px 8px;font-size:13px}
+.backdrop{position:fixed;inset:0;background:#091e4280;display:none;align-items:center;justify-content:center;padding:15px;z-index:10}
+.backdrop.open{display:flex}
+.modal{background:white;border-radius:12px;width:min(560px,100%);max-height:92vh;overflow:auto;padding:22px;box-shadow:0 12px 40px #091e4240}
+.modal h2{margin:0 0 16px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:bold}
+.field input,.field select,.field textarea{width:100%;border:1px solid #b6c2cf;border-radius:7px;padding:10px;background:#fff}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.help{font-size:12px;color:#626f86;margin-top:12px}
+@media(max-width:650px){
+ main{padding:14px}
+ .column{flex-basis:85vw;width:85vw;max-height:none}
+ .formgrid{grid-template-columns:1fr}
+ .field.full{grid-column:auto}
+ .stat{flex:1;min-width:95px}
 }
 </style>
+
 </head>
-
 <body>
-
 <header>
-    <h1><i class="fa-solid fa-scissors"></i> Control de Modista</h1>
-    <p>Gestión de prendas y modificaciones</p>
-
-    <div class="botones">
-        <button class="reporte" onclick="abrirReporte()">
-            <i class="fa-brands fa-whatsapp"></i>
-            Resumen / WhatsApp
-        </button>
-
-        <button class="nuevo" onclick="abrirModal()">
-            <i class="fa-solid fa-plus"></i> Nueva prenda
-        </button>
-    </div>
+  <div>
+    <h1>🧵 Control de Modista</h1>
+    <p>Organizá cada arreglo en un tablero estilo Trello.</p>
+  </div>
+  <button class="primary" id="nueva">＋ Nueva prenda</button>
 </header>
 
-<main class="contenedor">
+<main>
+  <div class="stats">
+    <div class="stat"><small>Total de prendas</small><strong id="total">0</strong></div>
+    <div class="stat"><small>En espera</small><strong id="sEspera">0</strong></div>
+    <div class="stat"><small>En taller</small><strong id="sTaller">0</strong></div>
+    <div class="stat"><small>Entregadas</small><strong id="sEntregado">0</strong></div>
+  </div>
 
-    <div class="resumen">
-        <div class="stat">Total<h2 id="total">0</h2></div>
-        <div class="stat">En espera<h2 id="totalEspera">0</h2></div>
-        <div class="stat">En taller<h2 id="totalTaller">0</h2></div>
-        <div class="stat">Entregadas<h2 id="totalEntregado">0</h2></div>
+  <div class="tools">
+    <input id="buscar" type="search" placeholder="Buscar cliente o prenda">
+    <select id="filtro">
+      <option value="">Todos los estados</option>
+      <option value="espera">En espera</option>
+      <option value="taller">En taller</option>
+      <option value="entregado">Entregado</option>
+    </select>
+    <button class="secondary" id="whatsapp">Compartir resumen por WhatsApp</button>
+  </div>
+
+  <section class="board" id="tablero">
+    <div class="column" data-estado="espera">
+      <div class="column-title">📥 En espera <span class="count" id="cEspera">0</span></div>
+      <div class="cards" id="listaEspera"></div>
     </div>
-
-    <div class="filtros">
-        <input id="buscador" placeholder="Buscar prenda o empresa..."
-               oninput="renderizar()">
-
-        <select id="filtroEstado" onchange="renderizar()">
-            <option value="">Todos los estados</option>
-            <option>En espera</option>
-            <option>En taller</option>
-            <option>Entregado</option>
-        </select>
-
-        <button onclick="limpiarFiltros()">Limpiar</button>
+    <div class="column" data-estado="taller">
+      <div class="column-title">🪡 En taller <span class="count" id="cTaller">0</span></div>
+      <div class="cards" id="listaTaller"></div>
     </div>
-
-    <h2>Tablero de prendas</h2>
-    <p>En celular, deslizá hacia los costados para ver las columnas.</p>
-
-    <div class="tablero">
-
-        <section class="columna espera" data-estado="En espera"
-                 ondragover="permitirSoltar(event)"
-                 ondrop="soltar(event)">
-            <div class="titulo-columna">
-                <span>🕒 En espera</span>
-                <span id="contadorEspera">0</span>
-            </div>
-            <div class="lista" id="listaEspera"></div>
-        </section>
-
-        <section class="columna taller" data-estado="En taller"
-                 ondragover="permitirSoltar(event)"
-                 ondrop="soltar(event)">
-            <div class="titulo-columna">
-                <span>🧵 En taller</span>
-                <span id="contadorTaller">0</span>
-            </div>
-            <div class="lista" id="listaTaller"></div>
-        </section>
-
-        <section class="columna entregado" data-estado="Entregado"
-                 ondragover="permitirSoltar(event)"
-                 ondrop="soltar(event)">
-            <div class="titulo-columna">
-                <span>✅ Entregado</span>
-                <span id="contadorEntregado">0</span>
-            </div>
-            <div class="lista" id="listaEntregado"></div>
-        </section>
-
+    <div class="column" data-estado="entregado">
+      <div class="column-title">✅ Entregado <span class="count" id="cEntregado">0</span></div>
+      <div class="cards" id="listaEntregado"></div>
     </div>
+  </section>
 </main>
 
-<!-- FORMULARIO -->
-<div class="modal" id="modal">
-    <div class="modal-contenido">
-        <h2 id="tituloModal">Nueva prenda</h2>
-
-        <form id="formPrenda" onsubmit="guardar(event)">
-            <input type="hidden" id="id">
-
-            <div>
-                <label>Empresa</label>
-                <input id="empresa" required>
-            </div>
-
-            <div class="campo-doble">
-                <div>
-                    <label>Prenda</label>
-                    <input id="prenda" required>
-                </div>
-                <div>
-                    <label>Talle</label>
-                    <input id="talle" required>
-                </div>
-            </div>
-
-            <div class="campo-doble">
-                <div>
-                    <label>Cantidad</label>
-                    <input id="cantidad" type="number" min="1"
-                           value="1" required>
-                </div>
-                <div>
-                    <label>Fecha de envío</label>
-                    <input id="fecha" type="date" required>
-                </div>
-            </div>
-
-            <div>
-                <label>Modificación</label>
-                <textarea id="modificacion" rows="3" required></textarea>
-            </div>
-
-            <div>
-                <label>Estado</label>
-                <select id="estado">
-                    <option>En espera</option>
-                    <option>En taller</option>
-                    <option>Entregado</option>
-                </select>
-            </div>
-
-            <button class="boton-guardar" type="submit">Guardar</button>
-            <button class="boton-cancelar" type="button"
-                    onclick="cerrarModal()">Cancelar</button>
-        </form>
-    </div>
-</div>
-
-<!-- RESUMEN -->
-<div class="modal" id="modalReporte">
-    <div class="modal-contenido">
-        <h2>Resumen de prendas</h2>
-        <textarea id="textoReporte" rows="12"
-                  style="width:100%"></textarea>
-        <button class="boton-guardar" onclick="copiarReporte()">
-            Copiar resumen
-        </button>
-        <button class="nuevo" onclick="enviarWhatsApp()">
-            Enviar por WhatsApp
-        </button>
-        <button class="boton-cancelar"
-                onclick="cerrarReporte()">Cerrar</button>
-    </div>
+<div class="backdrop" id="fondoModal" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+  <div class="modal">
+    <h2 id="tituloModal">Nueva prenda</h2>
+    <form id="formPrenda">
+      <input type="hidden" id="idPrenda">
+      <div class="formgrid">
+        <div class="field">
+          <label for="cliente">Nombre del cliente *</label>
+          <input id="cliente" required maxlength="80">
+        </div>
+        <div class="field">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" type="tel" maxlength="30">
+        </div>
+        <div class="field full">
+          <label for="prenda">Prenda / arreglo *</label>
+          <input id="prenda" required maxlength="120" placeholder="Ej. Pantalón: ajustar ruedo">
+        </div>
+        <div class="field">
+          <label for="ingreso">Fecha de ingreso</label>
+          <input id="ingreso" type="date">
+        </div>
+        <div class="field">
+          <label for="entrega">Fecha de entrega</label>
+          <input id="entrega" type="date">
+        </div>
+        <div class="field">
+          <label for="precio">Precio ($)</label>
+          <input id="precio" type="number" min="0" step="0.01">
+        </div>
+        <div class="field">
+          <label for="estado">Estado</label>
+          <select id="estado">
+            <option value="espera">En espera</option>
+            <option value="taller">En taller</option>
+            <option value="entregado">Entregado</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="notas">Notas</label>
+          <textarea id="notas" rows="3" maxlength="500"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="cancelar">Cancelar</button>
+        <button type="submit" class="primary">Guardar prenda</button>
+      </div>
+      <p class="help">Los datos se guardan en este navegador.</p>
+    </form>
+  </div>
 </div>
 
 <script>
-let prendas = JSON.parse(localStorage.getItem("prendas_modista")) || [];
+(function () {
+  'use strict';
 
-// Adaptar registros creados con versiones anteriores.
-prendas = prendas.map(p => ({
-    ...p,
-    estado: p.estado === "Pendiente" ? "En espera" :
-            p.estado === "Finalizado" ? "Entregado" :
-            p.estado || "En espera"
-}));
+  const CLAVE = 'controlModistaPrendas_v3';
+  const estados = ['espera', 'taller', 'entregado'];
+  const etiquetas = {
+    espera: 'En espera',
+    taller: 'En taller',
+    entregado: 'Entregado'
+  };
+  const $ = id => document.getElementById(id);
+  let prendas = [];
 
-const $ = id => document.getElementById(id);
+  try {
+    const datos = JSON.parse(localStorage.getItem(CLAVE) || '[]');
+    if (Array.isArray(datos)) prendas = datos;
+  } catch (error) {
+    console.error('Error al cargar prendas:', error);
+  }
 
-function guardarDatos() {
-    localStorage.setItem("prendas_modista", JSON.stringify(prendas));
-    renderizar();
-}
+  function guardar() {
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify(prendas));
+      return true;
+    } catch (error) {
+      alert('No se pudieron guardar los datos en este navegador.');
+      return false;
+    }
+  }
 
-function abrirModal(id = null) {
-    $("formPrenda").reset();
-    $("id").value = "";
-    $("cantidad").value = 1;
-    $("fecha").value = new Date().toISOString().slice(0, 10);
-    $("tituloModal").textContent = id ? "Editar prenda" : "Nueva prenda";
+  function hoy() {
+    const d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
 
-    if (id !== null) {
-        const p = prendas.find(x => x.id == id);
-        if (!p) return;
+  function escapar(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, letra => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;',
+      '"': '&quot;', "'": '&#39;'
+    })[letra]);
+  }
 
-        $("id").value = p.id;
-        $("empresa").value = p.empresa;
-        $("prenda").value = p.nombrePrenda;
-        $("talle").value = p.talle;
-        $("cantidad").value = p.cantidad;
-        $("fecha").value = p.fechaEnvio;
-        $("modificacion").value = p.modificacion;
-        $("estado").value = p.estado;
+  function fechaBonita(valor) {
+    if (!valor) return '';
+    const partes = valor.split('-');
+    return partes.length === 3
+      ? partes[2] + '/' + partes[1] + '/' + partes[0]
+      : valor;
+  }
+
+  function abrirModal(prenda = null) {
+    $('formPrenda').reset();
+    $('idPrenda').value = '';
+    $('ingreso').value = hoy();
+    $('estado').value = 'espera';
+    $('tituloModal').textContent = prenda ? 'Editar prenda' : 'Nueva prenda';
+
+    if (prenda) {
+      $('idPrenda').value = prenda.id;
+      $('cliente').value = prenda.cliente || '';
+      $('telefono').value = prenda.telefono || '';
+      $('prenda').value = prenda.prenda || '';
+      $('ingreso').value = prenda.ingreso || '';
+      $('entrega').value = prenda.entrega || '';
+      $('precio').value = prenda.precio ?? '';
+      $('estado').value = prenda.estado || 'espera';
+      $('notas').value = prenda.notas || '';
     }
 
-    $("modal").style.display = "flex";
-}
+    $('fondoModal').classList.add('open');
+    setTimeout(() => $('cliente').focus(), 50);
+  }
 
-function cerrarModal() {
-    $("modal").style.display = "none";
-}
+  function cerrarModal() {
+    $('fondoModal').classList.remove('open');
+  }
 
-function guardar(e) {
-    e.preventDefault();
+  function pintar() {
+    const busqueda = $('buscar').value.trim().toLocaleLowerCase('es');
+    const filtro = $('filtro').value;
+    const visibles = prendas.filter(p => {
+      const coincideEstado = !filtro || p.estado === filtro;
+      const texto = [p.cliente, p.telefono, p.prenda, p.notas]
+        .some(v => String(v || '').toLocaleLowerCase('es').includes(busqueda));
+      return coincideEstado && (!busqueda || texto);
+    });
 
-    const id = $("id").value;
-    const datos = {
-        id: id ? Number(id) : Date.now(),
-        empresa: $("empresa").value.trim(),
-        nombrePrenda: $("prenda").value.trim(),
-        talle: $("talle").value.trim(),
-        cantidad: Number($("cantidad").value),
-        fechaEnvio: $("fecha").value,
-        modificacion: $("modificacion").value.trim(),
-        estado: $("estado").value
+    const listas = {
+      espera: 'listaEspera',
+      taller: 'listaTaller',
+      entregado: 'listaEntregado'
+    };
+    const contadores = {
+      espera: 'cEspera',
+      taller: 'cTaller',
+      entregado: 'cEntregado'
+    };
+
+    estados.forEach(estado => {
+      const contenedor = $(listas[estado]);
+      const lista = visibles.filter(p => p.estado === estado);
+      $(contadores[estado]).textContent = lista.length;
+      contenedor.innerHTML = '';
+
+      if (!lista.length) {
+        contenedor.innerHTML =
+          '<div class="empty">Sin prendas por ahora</div>';
+        return;
+      }
+
+      lista.forEach(p => {
+        const tarjeta = document.createElement('article');
+        tarjeta.className = 'card';
+        tarjeta.draggable = true;
+        tarjeta.dataset.id = p.id;
+
+        let html = '<h3>' + escapar(p.cliente) + '</h3>';
+        html += '<p><b>Prenda:</b> ' + escapar(p.prenda) + '</p>';
+        if (p.telefono) html += '<p><b>Teléfono:</b> ' + escapar(p.telefono) + '</p>';
+        if (p.entrega) html += '<p><b>Entrega:</b> ' + escapar(fechaBonita(p.entrega)) + '</p>';
+        if (p.precio !== '' && p.precio != null) html += '<p><b>Precio:</b> $' + escapar(p.precio) + '</p>';
+        if (p.notas) html += '<p><b>Notas:</b> ' + escapar(p.notas) + '</p>';
+
+        html += '<span class="pill">' + etiquetas[p.estado] + '</span>';
+        html += '<div class="actions">';
+        html += '<button type="button" class="secondary" data-accion="editar">Editar</button>';
+        html += '<button type="button" class="secondary" data-accion="mover">' +
+          (p.estado === 'espera' ? 'Pasar a taller' :
+           p.estado === 'taller' ? 'Marcar entregado' : 'Volver a espera') +
+          '</button>';
+        html += '<button type="button" class="danger" data-accion="borrar">Eliminar</button>';
+        html += '</div>';
+
+        tarjeta.innerHTML = html;
+
+        tarjeta.addEventListener('click', evento => {
+          const boton = evento.target.closest('button');
+          if (!boton) return;
+
+          const actual = prendas.find(x => x.id === p.id);
+          if (!actual) return;
+
+          if (boton.dataset.accion === 'editar') {
+            abrirModal(actual);
+          } else if (boton.dataset.accion === 'mover') {
+            actual.estado = actual.estado === 'espera' ? 'taller' :
+              actual.estado === 'taller' ? 'entregado' : 'espera';
+            if (guardar()) pintar();
+          } else if (boton.dataset.accion === 'borrar' &&
+                     confirm('¿Querés eliminar esta prenda?')) {
+            prendas = prendas.filter(x => x.id !== p.id);
+            if (guardar()) pintar();
+          }
+        });
+
+        tarjeta.addEventListener('dragstart', evento => {
+          evento.dataTransfer.setData('text/plain', p.id);
+          evento.dataTransfer.effectAllowed = 'move';
+        });
+
+        contenedor.appendChild(tarjeta);
+      });
+    });
+
+    $('total').textContent = prendas.length;
+    $('sEspera').textContent = prendas.filter(p => p.estado === 'espera').length;
+    $('sTaller').textContent = prendas.filter(p => p.estado === 'taller').length;
+    $('sEntregado').textContent = prendas.filter(p => p.estado === 'entregado').length;
+  }
+
+  $('formPrenda').addEventListener('submit', evento => {
+    evento.preventDefault();
+
+    const cliente = $('cliente').value.trim();
+    const descripcion = $('prenda').value.trim();
+
+    if (!cliente || !descripcion) {
+      alert('Completá el nombre del cliente y la prenda.');
+      return;
+    }
+
+    const id = $('idPrenda').value;
+    const registro = {
+      id: id || (window.crypto && crypto.randomUUID
+        ? crypto.randomUUID()
+        : String(Date.now())),
+      cliente: cliente,
+      telefono: $('telefono').value.trim(),
+      prenda: descripcion,
+      ingreso: $('ingreso').value,
+      entrega: $('entrega').value,
+      precio: $('precio').value,
+      estado: estados.includes($('estado').value) ? $('estado').value : 'espera',
+      notas: $('notas').value.trim()
     };
 
     if (id) {
-        const indice = prendas.findIndex(p => p.id == id);
-        if (indice !== -1) prendas[indice] = datos;
+      prendas = prendas.map(p => p.id === id ? registro : p);
     } else {
-        prendas.unshift(datos);
+      prendas.push(registro);
     }
 
-    guardarDatos();
-    cerrarModal();
-}
-
-function eliminarPrenda(id) {
-    if (!confirm("¿Querés eliminar esta prenda?")) return;
-    prendas = prendas.filter(p => p.id != id);
-    guardarDatos();
-}
-
-function cambiarEstado(id, estado) {
-    const p = prendas.find(p => p.id == id);
-    if (!p) return;
-    p.estado = estado;
-    guardarDatos();
-}
-
-function permitirSoltar(e) {
-    e.preventDefault();
-}
-
-function soltar(e) {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    cambiarEstado(id, e.currentTarget.dataset.estado);
-}
-
-function renderizar() {
-    const columnas = {
-        "En espera": $("listaEspera"),
-        "En taller": $("listaTaller"),
-        "Entregado": $("listaEntregado")
-    };
-
-    Object.values(columnas).forEach(c => c.innerHTML = "");
-
-    const busqueda = $("buscador").value.toLowerCase();
-    const filtro = $("filtroEstado").value;
-
-    const lista = prendas.filter(p => {
-        const texto = [
-            p.empresa, p.nombrePrenda, p.talle, p.modificacion
-        ].join(" ").toLowerCase();
-
-        return texto.includes(busqueda) &&
-               (!filtro || p.estado === filtro);
-    });
-
-    const conteos = {
-        "En espera": 0,
-        "En taller": 0,
-        "Entregado": 0
-    };
-
-    lista.forEach(p => {
-        const estado = columnas[p.estado] ? p.estado : "En espera";
-        conteos[estado]++;
-
-        const tarjeta = document.createElement("article");
-        tarjeta.className = "tarjeta";
-        tarjeta.draggable = true;
-
-        tarjeta.ondragstart = e => {
-            e.dataTransfer.setData("text/plain", p.id);
-        };
-
-        const titulo = document.createElement("h4");
-        titulo.textContent = p.nombrePrenda;
-
-        const empresa = document.createElement("p");
-        empresa.className = "empresa";
-        empresa.textContent = p.empresa;
-
-        const detalle = document.createElement("p");
-        detalle.className = "detalle";
-        detalle.textContent =
-            `Talle: ${p.talle} | Cantidad: ${p.cantidad}`;
-
-        const modificacion = document.createElement("p");
-        modificacion.textContent = p.modificacion;
-
-        const fecha = document.createElement("p");
-        fecha.className = "detalle";
-        fecha.textContent = "Envío: " +
-            (p.fechaEnvio || "").split("-").reverse().join("/");
-
-        const acciones = document.createElement("div");
-        acciones.className = "acciones";
-
-        const selector = document.createElement("select");
-
-        ["En espera", "En taller", "Entregado"].forEach(estado => {
-            const opcion = document.createElement("option");
-            opcion.value = estado;
-            opcion.textContent = estado;
-            opcion.selected = estado === p.estado;
-            selector.appendChild(opcion);
-        });
-
-        selector.onchange = () => cambiarEstado(p.id, selector.value);
-
-        const editar = document.createElement("button");
-        editar.className = "editar";
-        editar.textContent = "✏️";
-        editar.onclick = () => abrirModal(p.id);
-
-        const borrar = document.createElement("button");
-        borrar.className = "eliminar";
-        borrar.textContent = "🗑️";
-        borrar.onclick = () => eliminarPrenda(p.id);
-
-        acciones.append(selector, editar, borrar);
-        tarjeta.append(titulo, empresa, detalle,
-                       modificacion, fecha, acciones);
-        columnas[estado].appendChild(tarjeta);
-    });
-
-    $("total").textContent = prendas.length;
-    $("totalEspera").textContent = prendas.filter(
-        p => p.estado === "En espera").length;
-    $("totalTaller").textContent = prendas.filter(
-        p => p.estado === "En taller").length;
-    $("totalEntregado").textContent = prendas.filter(
-        p => p.estado === "Entregado").length;
-
-    $("contadorEspera").textContent = conteos["En espera"];
-    $("contadorTaller").textContent = conteos["En taller"];
-    $("contadorEntregado").textContent = conteos["Entregado"];
-
-    Object.entries(columnas).forEach(([estado, columna]) => {
-        if (!columna.children.length) {
-            const vacio = document.createElement("p");
-            vacio.className = "detalle";
-            vacio.textContent = "No hay prendas";
-            columna.appendChild(vacio);
-        }
-    });
-}
-
-function limpiarFiltros() {
-    $("buscador").value = "";
-    $("filtroEstado").value = "";
-    renderizar();
-}
-
-function abrirReporte() {
-    $("textoReporte").value = prendas.map((p, i) =>
-        `${i + 1}. ${p.nombrePrenda} - Talle: ${p.talle}\n` +
-        `Empresa: ${p.empresa}\nCantidad: ${p.cantidad}\n` +
-        `Modificación: ${p.modificacion}\nEstado: ${p.estado}`
-    ).join("\n\n");
-
-    $("modalReporte").style.display = "flex";
-}
-
-function cerrarReporte() {
-    $("modalReporte").style.display = "none";
-}
-
-async function copiarReporte() {
-    try {
-        await navigator.clipboard.writeText($("textoReporte").value);
-        alert("Resumen copiado");
-    } catch {
-        $("textoReporte").select();
-        document.execCommand("copy");
-        alert("Resumen copiado");
+    if (guardar()) {
+      cerrarModal();
+      pintar();
     }
-}
+  });
 
-function enviarWhatsApp() {
-    const texto = encodeURIComponent($("textoReporte").value);
-    window.open("https://wa.me/?text=" + texto, "_blank");
-}
+  $('nueva').addEventListener('click', () => abrirModal());
+  $('cancelar').addEventListener('click', cerrarModal);
 
-renderizar();
+  $('fondoModal').addEventListener('click', evento => {
+    if (evento.target === $('fondoModal')) cerrarModal();
+  });
+
+  document.addEventListener('keydown', evento => {
+    if (evento.key === 'Escape') cerrarModal();
+  });
+
+  $('buscar').addEventListener('input', pintar);
+  $('filtro').addEventListener('change', pintar);
+
+  document.querySelectorAll('.column').forEach(columna => {
+    columna.addEventListener('dragover', evento => evento.preventDefault());
+    columna.addEventListener('drop', evento => {
+      evento.preventDefault();
+      const id = evento.dataTransfer.getData('text/plain');
+      const prenda = prendas.find(p => p.id === id);
+
+      if (prenda) {
+        prenda.estado = columna.dataset.estado;
+        if (guardar()) pintar();
+      }
+    });
+  });
+
+  $('whatsapp').addEventListener('click', () => {
+    const resumen = estados.map(e =>
+      etiquetas[e] + ': ' + prendas.filter(p => p.estado === e).length
+    );
+    const detalle = prendas.map(p =>
+      '• ' + p.cliente + ' — ' + p.prenda + ' (' + etiquetas[p.estado] + ')'
+    );
+    const mensaje = 'Control de Modista\n' +
+      resumen.join('\n') + '\n\n' + detalle.join('\n');
+
+    window.open(
+      'https://wa.me/?text=' + encodeURIComponent(mensaje),
+      '_blank'
+    );
+  });
+
+  pintar();
+})();
 </script>
-
 </body>
 </html>
