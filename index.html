@@ -133,6 +133,38 @@
       color: #444444;
     }
 
+    /* CONTROLES PARA ALEJAR Y ACERCAR EL TABLERO */
+    .controles-zoom {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .controles-zoom button {
+      min-width: 38px;
+      height: 36px;
+      padding: 6px 12px;
+      border: 1px solid #c9ddcb;
+      border-radius: 8px;
+      background: white;
+      color: #344638;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .controles-zoom button:hover {
+      background: #dff0e1;
+    }
+
+    #nivelZoom {
+      min-width: 48px;
+      text-align: center;
+      font-size: 13px;
+      color: #506654;
+    }
+
     .tablero {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -310,7 +342,18 @@
       </div>
     </form>
 
-    <div class="tablero">
+    <!-- NUEVOS BOTONES DE ZOOM -->
+    <div class="controles-zoom">
+      <span>Vista:</span>
+      <button type="button" onclick="cambiarZoom(-0.1)" title="Alejar">−</button>
+      <span id="nivelZoom">100%</span>
+      <button type="button" onclick="cambiarZoom(0.1)" title="Acercar">+</button>
+      <button type="button" onclick="restablecerZoom()" title="Tamaño normal">
+        100%
+      </button>
+    </div>
+
+    <div class="tablero" id="tablero">
       <section class="columna espera">
         <h2 class="encabezado-columna">
           En espera <span class="contador" id="contador-espera">0</span>
@@ -339,6 +382,31 @@
 
     let empresas = cargarEmpresas();
     let editandoId = null;
+
+    /* NUEVA FUNCIÓN PARA ALEJAR Y ACERCAR */
+    let zoomTablero = 1;
+
+    function cambiarZoom(cambio) {
+      zoomTablero = Math.max(
+        0.5,
+        Math.min(1.2, Math.round((zoomTablero + cambio) * 10) / 10)
+      );
+
+      aplicarZoom();
+    }
+
+    function restablecerZoom() {
+      zoomTablero = 1;
+      aplicarZoom();
+    }
+
+    function aplicarZoom() {
+      const tablero = document.getElementById("tablero");
+
+      tablero.style.zoom = zoomTablero;
+      document.getElementById("nivelZoom").textContent =
+        Math.round(zoomTablero * 100) + "%";
+    }
 
     function cargarEmpresas() {
       try {
@@ -531,6 +599,7 @@
       });
     }
 
+    aplicarZoom();
     mostrarEmpresas();
   </script>
 </body>
