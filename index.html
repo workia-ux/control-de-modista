@@ -133,7 +133,7 @@
       color: #444444;
     }
 
-    /* CONTROLES PARA ALEJAR Y ACERCAR EL TABLERO */
+    /* CONTROLES DE ZOOM */
     .controles-zoom {
       display: flex;
       justify-content: flex-end;
@@ -165,6 +165,7 @@
       color: #506654;
     }
 
+    /* TABLERO TIPO TRELLO */
     .tablero {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -177,6 +178,12 @@
       border-radius: 15px;
       min-height: 300px;
       min-width: 0;
+      transition: box-shadow 0.2s, outline 0.2s;
+    }
+
+    .columna.arrastrando-sobre {
+      outline: 3px dashed #6eaa79;
+      box-shadow: 0 0 0 4px #b9dfbd66;
     }
 
     .espera {
@@ -214,6 +221,22 @@
       margin-bottom: 12px;
       box-shadow: 0 2px 7px #0000000c;
       overflow-wrap: anywhere;
+      cursor: grab;
+      border: 2px solid transparent;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .tarjeta:hover {
+      box-shadow: 0 4px 12px #00000016;
+    }
+
+    .tarjeta:active {
+      cursor: grabbing;
+    }
+
+    .tarjeta.arrastrando {
+      opacity: 0.4;
+      transform: rotate(2deg);
     }
 
     .nombre-empresa {
@@ -234,6 +257,7 @@
       padding-top: 12px;
       line-height: 1.6;
       font-size: 14px;
+      cursor: default;
     }
 
     .detalle p {
@@ -250,6 +274,7 @@
       flex-wrap: wrap;
       gap: 7px;
       margin-top: 13px;
+      cursor: default;
     }
 
     .acciones-tarjeta button,
@@ -267,6 +292,7 @@
       font-size: 13px;
       text-align: center;
       padding: 20px 5px;
+      pointer-events: none;
     }
 
     @media (max-width: 800px) {
@@ -342,7 +368,6 @@
       </div>
     </form>
 
-    <!-- NUEVOS BOTONES DE ZOOM -->
     <div class="controles-zoom">
       <span>Vista:</span>
       <button type="button" onclick="cambiarZoom(-0.1)" title="Alejar">−</button>
@@ -354,21 +379,21 @@
     </div>
 
     <div class="tablero" id="tablero">
-      <section class="columna espera">
+      <section class="columna espera" data-estado="espera">
         <h2 class="encabezado-columna">
           En espera <span class="contador" id="contador-espera">0</span>
         </h2>
         <div id="lista-espera"></div>
       </section>
 
-      <section class="columna taller">
+      <section class="columna taller" data-estado="taller">
         <h2 class="encabezado-columna">
           En taller <span class="contador" id="contador-taller">0</span>
         </h2>
         <div id="lista-taller"></div>
       </section>
 
-      <section class="columna entregado">
+      <section class="columna entregado" data-estado="entregado">
         <h2 class="encabezado-columna">
           Entregado <span class="contador" id="contador-entregado">0</span>
         </h2>
@@ -382,16 +407,15 @@
 
     let empresas = cargarEmpresas();
     let editandoId = null;
-
-    /* NUEVA FUNCIÓN PARA ALEJAR Y ACERCAR */
     let zoomTablero = 1;
+    let idArrastrado = null;
 
+    /* ZOOM */
     function cambiarZoom(cambio) {
       zoomTablero = Math.max(
         0.5,
         Math.min(1.2, Math.round((zoomTablero + cambio) * 10) / 10)
       );
-
       aplicarZoom();
     }
 
@@ -401,13 +425,12 @@
     }
 
     function aplicarZoom() {
-      const tablero = document.getElementById("tablero");
-
-      tablero.style.zoom = zoomTablero;
+      document.getElementById("tablero").style.zoom = zoomTablero;
       document.getElementById("nivelZoom").textContent =
         Math.round(zoomTablero * 100) + "%";
     }
 
+    /* DATOS */
     function cargarEmpresas() {
       try {
         const datos = JSON.parse(localStorage.getItem(CLAVE));
@@ -421,10 +444,10 @@
       localStorage.setItem(CLAVE, JSON.stringify(empresas));
     }
 
+    /* FORMULARIO */
     function abrirFormulario(id = null) {
       editandoId = id;
       const formulario = document.getElementById("formulario");
-
       formulario.reset();
 
       if (id !== null) {
@@ -434,11 +457,11 @@
         document.getElementById("tituloFormulario").textContent =
           "Editar empresa";
 
-        document.getElementById("empresa").value = empresa.empresa;
-        document.getElementById("prenda").value = empresa.prenda;
-        document.getElementById("cantidad").value = empresa.cantidad;
-        document.getElementById("modificacion").value = empresa.modificacion;
-        document.getElementById("observacion").value = empresa.observacion;
+        document.getElementById("empresa").value = empresa.empresa || "";
+        document.getElementById("prenda").value = empresa.prenda || "";
+        document.getElementById("cantidad").value = empresa.cantidad || "";
+        document.getElementById("modificacion").value = empresa.modificacion || "";
+        document.getElementById("observacion").value = empresa.observacion || "";
       } else {
         document.getElementById("tituloFormulario").textContent =
           "Nueva empresa";
@@ -488,6 +511,7 @@
       mostrarEmpresas();
     });
 
+    /* CAMBIAR ESTADO DESDE EL SELECTOR */
     function cambiarEstado(id, estado) {
       const empresa = empresas.find(item => item.id === id);
       if (!empresa) return;
@@ -497,6 +521,57 @@
       mostrarEmpresas();
     }
 
+    /* ARRASTRAR Y SOLTAR COMO TRELLO */
+    function configurarArrastre(tarjeta, item) {
+      tarjeta.draggable = true;
+
+      tarjeta.addEventListener("dragstart", function(e) {
+        idArrastrado = item.id;
+        tarjeta.classList.add("arrastrando");
+
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(item.id));
+      });
+
+      tarjeta.addEventListener("dragend", function() {
+        tarjeta.classList.remove("arrastrando");
+        document.querySelectorAll(".columna").forEach(columna => {
+          columna.classList.remove("arrastrando-sobre");
+        });
+        idArrastrado = null;
+      });
+    }
+
+    document.querySelectorAll(".columna").forEach(columna => {
+      columna.addEventListener("dragover", function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        columna.classList.add("arrastrando-sobre");
+      });
+
+      columna.addEventListener("dragleave", function(e) {
+        if (!columna.contains(e.relatedTarget)) {
+          columna.classList.remove("arrastrando-sobre");
+        }
+      });
+
+      columna.addEventListener("drop", function(e) {
+        e.preventDefault();
+        columna.classList.remove("arrastrando-sobre");
+
+        const id = idArrastrado || e.dataTransfer.getData("text/plain");
+        const nuevoEstado = columna.dataset.estado;
+        const empresa = empresas.find(item => String(item.id) === String(id));
+
+        if (!empresa || !nuevoEstado) return;
+
+        empresa.estado = nuevoEstado;
+        guardarDatos();
+        mostrarEmpresas();
+      });
+    });
+
+    /* ELIMINAR */
     function eliminarEmpresa(id) {
       if (!confirm("¿Querés eliminar esta empresa?")) return;
 
@@ -512,6 +587,7 @@
       return elemento;
     }
 
+    /* MOSTRAR TARJETAS */
     function mostrarEmpresas() {
       const estados = ["espera", "taller", "entregado"];
 
@@ -526,12 +602,13 @@
 
         if (elementos.length === 0) {
           lista.appendChild(
-            crearElemento("p", "vacio", "Todavía no hay empresas")
+            crearElemento("p", "vacio", "Arrastrá una tarjeta aquí")
           );
         }
 
         elementos.forEach(item => {
           const tarjeta = crearElemento("article", "tarjeta");
+          configurarArrastre(tarjeta, item);
 
           const nombre = crearElemento(
             "p",
