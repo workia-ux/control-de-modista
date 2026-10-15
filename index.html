@@ -221,13 +221,16 @@
       margin-bottom: 12px;
       box-shadow: 0 2px 7px #0000000c;
       overflow-wrap: anywhere;
-      cursor: grab;
       border: 2px solid transparent;
-      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
-    }
 
-    .tarjeta:hover {
-      box-shadow: 0 4px 12px #00000016;
+      /* Arrastre con mouse y pantalla táctil */
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+
+      transition: opacity 0.15s, box-shadow 0.15s;
     }
 
     .tarjeta:active {
@@ -235,8 +238,18 @@
     }
 
     .tarjeta.arrastrando {
-      opacity: 0.4;
+      opacity: 0.35;
+      border: 2px dashed #6eaa79;
+    }
+
+    .tarjeta-fantasma {
+      position: fixed;
+      z-index: 999999;
+      pointer-events: none;
+      opacity: 0.92;
       transform: rotate(2deg);
+      box-shadow: 0 10px 25px #0004;
+      margin: 0;
     }
 
     .nombre-empresa {
@@ -244,6 +257,7 @@
       font-weight: bold;
       cursor: pointer;
       margin: 0;
+      overflow-wrap: anywhere;
     }
 
     .nombre-empresa:hover {
@@ -257,7 +271,9 @@
       padding-top: 12px;
       line-height: 1.6;
       font-size: 14px;
-      cursor: default;
+      cursor: auto;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     .detalle p {
@@ -274,7 +290,7 @@
       flex-wrap: wrap;
       gap: 7px;
       margin-top: 13px;
-      cursor: default;
+      cursor: auto;
     }
 
     .acciones-tarjeta button,
@@ -285,6 +301,7 @@
       padding: 7px;
       font-size: 12px;
       cursor: pointer;
+      touch-action: manipulation;
     }
 
     .vacio {
@@ -316,6 +333,10 @@
 
       .campo.completo {
         grid-column: auto;
+      }
+
+      .controles-zoom {
+        flex-wrap: wrap;
       }
     }
   </style>
@@ -408,7 +429,16 @@
     let empresas = cargarEmpresas();
     let editandoId = null;
     let zoomTablero = 1;
+
+    // Variables para arrastrar con mouse o dedo
     let idArrastrado = null;
+    let tarjetaArrastrada = null;
+    let fantasma = null;
+    let inicioX = 0;
+    let inicioY = 0;
+    let desplazamientoActivo = false;
+    let punteroActual = null;
+    let destinoActual = null;
 
     /* ZOOM */
     function cambiarZoom(cambio) {
@@ -451,7 +481,7 @@
       formulario.reset();
 
       if (id !== null) {
-        const empresa = empresas.find(item => item.id === id);
+        const empresa = empresas.find(item => String(item.id) === String(id));
         if (!empresa) return;
 
         document.getElementById("tituloFormulario").textContent =
@@ -460,8 +490,10 @@
         document.getElementById("empresa").value = empresa.empresa || "";
         document.getElementById("prenda").value = empresa.prenda || "";
         document.getElementById("cantidad").value = empresa.cantidad || "";
-        document.getElementById("modificacion").value = empresa.modificacion || "";
-        document.getElementById("observacion").value = empresa.observacion || "";
+        document.getElementById("modificacion").value =
+          empresa.modificacion || "";
+        document.getElementById("observacion").value =
+          empresa.observacion || "";
       } else {
         document.getElementById("tituloFormulario").textContent =
           "Nueva empresa";
@@ -490,7 +522,9 @@
       };
 
       if (editandoId !== null) {
-        const indice = empresas.findIndex(item => item.id === editandoId);
+        const indice = empresas.findIndex(
+          item => String(item.id) === String(editandoId)
+        );
 
         if (indice !== -1) {
           empresas[indice] = {
@@ -511,9 +545,9 @@
       mostrarEmpresas();
     });
 
-    /* CAMBIAR ESTADO DESDE EL SELECTOR */
+    /* CAMBIAR ESTADO */
     function cambiarEstado(id, estado) {
-      const empresa = empresas.find(item => item.id === id);
+      const empresa = empresas.find(item => String(item.id) === String(id));
       if (!empresa) return;
 
       empresa.estado = estado;
@@ -521,61 +555,142 @@
       mostrarEmpresas();
     }
 
-    /* ARRASTRAR Y SOLTAR COMO TRELLO */
-    function configurarArrastre(tarjeta, item) {
-      tarjeta.draggable = true;
+    /* ARRASTRE COMPATIBLE CON COMPUTADORA Y CELULAR */
+    function iniciarArrastre(e, tarjeta, item) {
+      // Solo botón izquierdo en computadora.
+      if (e.pointerType === "mouse" && e.button !== 0) return;
 
-      tarjeta.addEventListener("dragstart", function(e) {
-        idArrastrado = item.id;
-        tarjeta.classList.add("arrastrando");
+      // No arrastrar al interactuar con botones o controles.
+      if (e.target.closest("button, select, input, textarea")) return;
 
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", String(item.id));
+      idArrastrado = item.id;
+      tarjetaArrastrada = tarjeta;
+      inicioX = e.clientX;
+      inicioY = e.clientY;
+      desplazamientoActivo = false;
+      punteroActual = e.pointerId;
+
+      document.addEventListener("pointermove", moverTarjeta, {
+        passive: false
       });
+      document.addEventListener("pointerup", soltarTarjeta);
+      document.addEventListener("pointercancel", cancelarArrastre);
+    }
 
-      tarjeta.addEventListener("dragend", function() {
-        tarjeta.classList.remove("arrastrando");
-        document.querySelectorAll(".columna").forEach(columna => {
-          columna.classList.remove("arrastrando-sobre");
-        });
-        idArrastrado = null;
+    function moverTarjeta(e) {
+      if (idArrastrado === null || e.pointerId !== punteroActual) return;
+
+      const distancia = Math.hypot(
+        e.clientX - inicioX,
+        e.clientY - inicioY
+      );
+
+      if (!desplazamientoActivo && distancia < 8) return;
+
+      e.preventDefault();
+
+      if (!desplazamientoActivo) {
+        desplazamientoActivo = true;
+
+        fantasma = tarjetaArrastrada.cloneNode(true);
+        fantasma.classList.remove("arrastrando");
+        fantasma.classList.add("tarjeta-fantasma");
+
+        const rect = tarjetaArrastrada.getBoundingClientRect();
+        fantasma.style.width = rect.width + "px";
+        fantasma.style.left = rect.left + "px";
+        fantasma.style.top = rect.top + "px";
+
+        document.body.appendChild(fantasma);
+        tarjetaArrastrada.classList.add("arrastrando");
+      }
+
+      if (fantasma) {
+        fantasma.style.left = (e.clientX + 8) + "px";
+        fantasma.style.top = (e.clientY + 8) + "px";
+      }
+
+      // Detectar la columna debajo del dedo o del mouse.
+      if (fantasma) fantasma.style.display = "none";
+
+      const elemento = document.elementFromPoint(e.clientX, e.clientY);
+      destinoActual = elemento ? elemento.closest(".columna") : null;
+
+      if (fantasma) fantasma.style.display = "";
+
+      document.querySelectorAll(".columna").forEach(columna => {
+        columna.classList.toggle(
+          "arrastrando-sobre",
+          columna === destinoActual
+        );
       });
     }
 
-    document.querySelectorAll(".columna").forEach(columna => {
-      columna.addEventListener("dragover", function(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
-        columna.classList.add("arrastrando-sobre");
-      });
+    function soltarTarjeta(e) {
+      if (e.pointerId !== punteroActual) return;
 
-      columna.addEventListener("dragleave", function(e) {
-        if (!columna.contains(e.relatedTarget)) {
-          columna.classList.remove("arrastrando-sobre");
+      if (desplazamientoActivo) {
+        if (fantasma) fantasma.style.display = "none";
+
+        const elemento = document.elementFromPoint(e.clientX, e.clientY);
+        const columnaDestino = elemento
+          ? elemento.closest(".columna")
+          : null;
+
+        if (columnaDestino && idArrastrado !== null) {
+          const estadoNuevo = columnaDestino.dataset.estado;
+          const empresa = empresas.find(
+            item => String(item.id) === String(idArrastrado)
+          );
+
+          if (empresa && estadoNuevo) {
+            empresa.estado = estadoNuevo;
+            guardarDatos();
+          }
         }
-      });
+      }
 
-      columna.addEventListener("drop", function(e) {
-        e.preventDefault();
-        columna.classList.remove("arrastrando-sobre");
+      finalizarArrastre();
 
-        const id = idArrastrado || e.dataTransfer.getData("text/plain");
-        const nuevoEstado = columna.dataset.estado;
-        const empresa = empresas.find(item => String(item.id) === String(id));
-
-        if (!empresa || !nuevoEstado) return;
-
-        empresa.estado = nuevoEstado;
-        guardarDatos();
+      if (desplazamientoActivo) {
         mostrarEmpresas();
+      }
+    }
+
+    function cancelarArrastre() {
+      finalizarArrastre();
+    }
+
+    function finalizarArrastre() {
+      document.removeEventListener("pointermove", moverTarjeta);
+      document.removeEventListener("pointerup", soltarTarjeta);
+      document.removeEventListener("pointercancel", cancelarArrastre);
+
+      if (fantasma) {
+        fantasma.remove();
+      }
+
+      if (tarjetaArrastrada) {
+        tarjetaArrastrada.classList.remove("arrastrando");
+      }
+
+      document.querySelectorAll(".columna").forEach(columna => {
+        columna.classList.remove("arrastrando-sobre");
       });
-    });
+
+      idArrastrado = null;
+      tarjetaArrastrada = null;
+      fantasma = null;
+      punteroActual = null;
+      destinoActual = null;
+      desplazamientoActivo = false;
+    }
 
     /* ELIMINAR */
     function eliminarEmpresa(id) {
       if (!confirm("¿Querés eliminar esta empresa?")) return;
 
-      empresas = empresas.filter(item => item.id !== id);
+      empresas = empresas.filter(item => String(item.id) !== String(id));
       guardarDatos();
       mostrarEmpresas();
     }
@@ -608,7 +723,10 @@
 
         elementos.forEach(item => {
           const tarjeta = crearElemento("article", "tarjeta");
-          configurarArrastre(tarjeta, item);
+
+          tarjeta.addEventListener("pointerdown", e => {
+            iniciarArrastre(e, tarjeta, item);
+          });
 
           const nombre = crearElemento(
             "p",
@@ -636,6 +754,9 @@
           });
 
           nombre.addEventListener("click", () => {
+            // No abrir/cerrar detalles después de arrastrar la tarjeta.
+            if (desplazamientoActivo) return;
+
             detalle.style.display =
               detalle.style.display === "block" ? "none" : "block";
           });
@@ -656,7 +777,7 @@
             selector.appendChild(opcion);
           });
 
-          selector.value = item.estado;
+          selector.value = item.estado || "espera";
           selector.addEventListener("change", () => {
             cambiarEstado(item.id, selector.value);
           });
